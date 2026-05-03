@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Финмодель — Тебойл Рус × ИНСАП · ОСАГО</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --accent: #2563eb;
+    --accent2: #10b981;
+    --accent3: #f59e0b;
+    --red: #ef4444;
+    --text: #f1f5f9;
+    --muted: #64748b;
+    --border: rgba(255,255,255,0.07);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 20%, rgba(37,99,235,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(16,185,129,0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 48px 24px; position: relative; z-index: 1; }
+
+  /* HEADER */
+  .header { margin-bottom: 48px; }
+  .header-label {
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 8px;
+  }
+  .header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 6vw, 72px);
+    letter-spacing: 0.02em; line-height: 1; color: #fff;
+  }
+  .header-title span { color: var(--accent2); }
+  .header-sub { margin-top: 12px; color: var(--muted); font-size: 13px; font-weight: 400; }
+  .period-badge {
+    display: inline-block;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 12px;
+    font-size: 12px; color: var(--muted); margin-top: 10px;
+  }
+
+  /* SECTION */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 0.06em;
+    color: var(--muted); text-transform: uppercase;
+    margin: 40px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title span { color: var(--text); }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px; margin-bottom: 8px;
+  }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 16px;
+    position: relative; overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent-color, var(--accent));
+  }
+  .kpi-card.green { --accent-color: var(--accent2); }
+  .kpi-card.amber { --accent-color: var(--accent3); }
+  .kpi-card.red   { --accent-color: var(--red); }
+  .kpi-label { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
+  .kpi-value { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 0.02em; color: #fff; line-height: 1; }
+  .kpi-unit  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* FUNNEL */
+  .funnel {
+    display: flex; align-items: center; gap: 0;
+    margin: 24px 0; flex-wrap: wrap;
+  }
+  .funnel-step {
+    flex: 1; min-width: 100px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 12px; text-align: center;
+  }
+  .funnel-arrow { color: var(--muted); font-size: 18px; padding: 0 6px; flex-shrink: 0; }
+  .funnel-n { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: #fff; }
+  .funnel-conv { font-size: 11px; color: var(--accent2); font-weight: 600; margin: 2px 0; }
+  .funnel-label { font-size: 11px; color: var(--muted); }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    text-align: left; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .num { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: #fff; }
+  .num.green { color: var(--accent2); }
+  .num.blue  { color: #60a5fa; }
+  .num.amber { color: var(--accent3); }
+  .tag {
+    display: inline-block; padding: 2px 8px;
+    border-radius: 4px; font-size: 11px; font-weight: 600;
+  }
+  .tag.assumption { background: rgba(245,158,11,0.15); color: #fcd34d; }
+  .tag.fact       { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+  .tag.bench      { background: rgba(37,99,235,0.15); color: #93c5fd; }
+
+  /* SCENARIO */
+  .scenario-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px; margin: 16px 0;
+  }
+  .scenario-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; position: relative;
+  }
+  .scenario-card.featured {
+    border-color: var(--accent2);
+    background: linear-gradient(135deg, rgba(16,185,129,0.08), var(--surface));
+  }
+  .scenario-card.featured::after {
+    content: 'БАЗОВЫЙ';
+    position: absolute; top: -1px; right: 16px;
+    background: var(--accent2); color: #0a0e1a;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+    padding: 3px 8px; border-radius: 0 0 6px 6px;
+  }
+  .sc-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .sc-name  { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: #fff; margin-bottom: 12px; }
+  .sc-row   { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12px; }
+  .sc-row:last-of-type { border-bottom: none; }
+  .sc-key   { color: var(--muted); }
+  .sc-val   { font-weight: 600; }
+  .sc-big   { font-family: 'Bebas Neue', sans-serif; font-size: 28px; margin-top: 12px; }
+  .sc-big.green { color: var(--accent2); }
+  .sc-big.amber { color: var(--accent3); }
+  .sc-big.red   { color: var(--red); }
+
+  /* JUSTIFY BOX */
+  .justify-box {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px; margin: 20px 0;
+    font-size: 13px; color: #cbd5e1; line-height: 1.8;
+  }
+  .justify-box strong { color: #fff; }
+
+  /* BOTTOM NOTE */
+  .note {
+    margin-top: 40px; padding: 16px 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; font-size: 12px; color: var(--muted);
+  }
+
+  .divider { height: 1px; background: var(--border); margin: 32px 0; }
+
+  /* SENSITIVITY BAR */
+  .sens-bar-wrap {
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px; height: 8px; margin-top: 4px; overflow: hidden;
+  }
+  .sens-bar { height: 100%; border-radius: 4px; background: var(--accent2); }
+
+  @media (max-width: 640px) {
+    .scenario-row { grid-template-columns: 1fr; }
+    .funnel { flex-direction: column; gap: 6px; }
+    .funnel-arrow { transform: rotate(90deg); }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-label">Коммерческое предложение · Расчёт финмодели · ОСАГО</div>
+    <div class="header-title">ТЕБОЙЛ РУС<br><span>× ИНСАП</span></div>
+    <div class="header-sub">Монетизация базы клиентов АЗС через продажу полисов ОСАГО · триггерная механика</div>
+    <div class="period-badge">Прогноз: в среднем за месяц · Триггер: истечение полиса ОСАГО</div>
+  </div>
+
+  <!-- KPI -->
+  <div class="section-title"><span>Ключевые показатели</span> · базовый сценарий</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">База клиентов</div>
+      <div class="kpi-value">800<span style="font-size:18px">К</span></div>
+      <div class="kpi-unit">уникальных клиентов АЗС</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Доставляемость push</div>
+      <div class="kpi-value">78<span style="font-size:18px">%</span></div>
+      <div class="kpi-unit">% от базы · данные Тебойл</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">CTR push</div>
+      <div class="kpi-value">10<span style="font-size:18px">%</span></div>
+      <div class="kpi-unit">% открытий от доставленных</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">CR анкета → оплата</div>
+      <div class="kpi-value">8<span style="font-size:18px">%</span></div>
+      <div class="kpi-unit">% · данные ИНСАП</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Продажи / мес.</div>
+      <div class="kpi-value">125</div>
+      <div class="kpi-unit">полисов ОСАГО</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Доход партнёра / год</div>
+      <div class="kpi-value">681<span style="font-size:18px">К</span></div>
+      <div class="kpi-unit">руб. · прогноз</div>
+    </div>
+  </div>
+
+  <!-- ВОРОНКА -->
+  <div class="section-title"><span>Расчётная воронка</span> · в среднем за месяц</div>
+  <div class="funnel">
+    <div class="funnel-step">
+      <div class="funnel-n">66 667</div>
+      <div class="funnel-conv">старт</div>
+      <div class="funnel-label">Клиентов с истек. полисом</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step">
+      <div class="funnel-n">52 000</div>
+      <div class="funnel-conv">78%</div>
+      <div class="funnel-label">Доставлено push</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step">
+      <div class="funnel-n">5 200</div>
+      <div class="funnel-conv">10%</div>
+      <div class="funnel-label">Кликнули по push</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step">
+      <div class="funnel-n">1 560</div>
+      <div class="funnel-conv">30%</div>
+      <div class="funnel-label">Заполнили анкету</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step" style="border-color: rgba(16,185,129,0.4);">
+      <div class="funnel-n" style="color:var(--accent2)">125</div>
+      <div class="funnel-conv">8%</div>
+      <div class="funnel-label">Оплатили полис</div>
+    </div>
+  </div>
+
+  <!-- ДЕТАЛЬНЫЙ РАСЧЁТ -->
+  <div class="section-title"><span>Детальный расчёт</span> · по этапам воронки</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Этап</th>
+        <th>Значение</th>
+        <th>Конверсия</th>
+        <th>Источник</th>
+        <th>Статус</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>База клиентов (тотал)</td>
+        <td><span class="num blue">800 000</span></td>
+        <td>—</td>
+        <td>данные Тебойл Рус</td>
+        <td><span class="tag fact">факт</span></td>
+      </tr>
+      <tr>
+        <td>Клиентов с истекающим полисом / мес.</td>
+        <td><span class="num blue">66 667</span></td>
+        <td>—</td>
+        <td>800 000 ÷ 12 мес.</td>
+        <td><span class="tag bench">расчёт</span></td>
+      </tr>
+      <tr>
+        <td>Доставлено push-уведомлений</td>
+        <td><span class="num">52 000</span></td>
+        <td>78%</td>
+        <td>данные Тебойл Рус</td>
+        <td><span class="tag fact">факт</span></td>
+      </tr>
+      <tr>
+        <td>Кликнули по push (открытия)</td>
+        <td><span class="num">5 200</span></td>
+        <td>10%</td>
+        <td>данные Тебойл Рус</td>
+        <td><span class="tag fact">факт</span></td>
+      </tr>
+      <tr>
+        <td>Заполнили анкету</td>
+        <td><span class="num">1 560</span></td>
+        <td>30%</td>
+        <td>допущение — уточнить по факту</td>
+        <td><span class="tag assumption">допущение</span></td>
+      </tr>
+      <tr>
+        <td>Оплатили полис ОСАГО</td>
+        <td><span class="num green">125</span></td>
+        <td>8%</td>
+        <td>бенчмарк ИНСАП</td>
+        <td><span class="tag fact">бенч</span></td>
+      </tr>
+      <tr>
+        <td>Доход партнёра / мес.</td>
+        <td><span class="num green">56 784 ₽</span></td>
+        <td>—</td>
+        <td>125 полисов × 455 руб.</td>
+        <td><span class="tag bench">расчёт</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="justify-box">
+    <strong>Логика расчёта:</strong> Тебойл направляет push-уведомление клиентам, у которых истекает полис ОСАГО. Это <strong>триггерная механика</strong> — наиболее эффективный формат: аудитория тёплая, потребность подтверждена. Среднее КВ ИНСАП — <strong>650 руб./полис</strong>, из которых <strong>70% (455 руб.)</strong> передаётся партнёру. CR анкеты в оплату — <strong>8% по данным ИНСАП</strong>. CR из клика в анкету — <strong>допущение 30%</strong>, ключевой параметр для уточнения после старта.
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- СЦЕНАРИИ -->
+  <div class="section-title"><span>Сценарии</span> · по CR заполнения анкеты</div>
+
+  <div class="scenario-row">
+    <div class="scenario-card">
+      <div class="sc-label">Сценарий</div>
+      <div class="sc-name">Консервативный</div>
+      <div class="sc-row"><span class="sc-key">CR клик → анкета</span><span class="sc-val">10%</span></div>
+      <div class="sc-row"><span class="sc-key">Заполнили анкету</span><span class="sc-val">520</span></div>
+      <div class="sc-row"><span class="sc-key">Продажи / мес.</span><span class="sc-val">42 полиса</span></div>
+      <div class="sc-row"><span class="sc-key">Доход / мес.</span><span class="sc-val">19 110 руб.</span></div>
+      <div class="sc-row"><span class="sc-key">Доход / год</span><span class="sc-val">229 320 руб.</span></div>
+      <div class="sc-big amber">229 320 ₽</div>
+    </div>
+    <div class="scenario-card featured">
+      <div class="sc-label">Сценарий</div>
+      <div class="sc-name">Базовый</div>
+      <div class="sc-row"><span class="sc-key">CR клик → анкета</span><span class="sc-val">30%</span></div>
+      <div class="sc-row"><span class="sc-key">Заполнили анкету</span><span class="sc-val">1 560</span></div>
+      <div class="sc-row"><span class="sc-key">Продажи / мес.</span><span class="sc-val">125 полисов</span></div>
+      <div class="sc-row"><span class="sc-key">Доход / мес.</span><span class="sc-val">56 875 руб.</span></div>
+      <div class="sc-row"><span class="sc-key">Доход / год</span><span class="sc-val">682 500 руб.</span></div>
+      <div class="sc-big green">682 500 ₽</div>
+    </div>
+    <div class="scenario-card">
+      <div class="sc-label">Сценарий</div>
+      <div class="sc-name">Оптимистичный</div>
+      <div class="sc-row"><span class="sc-key">CR клик → анкета</span><span class="sc-val">50%</span></div>
+      <div class="sc-row"><span class="sc-key">Заполнили анкету</span><span class="sc-val">2 600</span></div>
+      <div class="sc-row"><span class="sc-key">Продажи / мес.</span><span class="sc-val">208 полисов</span></div>
+      <div class="sc-row"><span class="sc-key">Доход / мес.</span><span class="sc-val">94 640 руб.</span></div>
+      <div class="sc-row"><span class="sc-key">Доход / год</span><span class="sc-val">1 135 680 руб.</span></div>
+      <div class="sc-big green">1 135 680 ₽</div>
+    </div>
+  </div>
+
+  <!-- ЧУВСТВИТЕЛЬНОСТЬ -->
+  <div class="section-title"><span>Чувствительность</span> · продажи / мес. при разных CR анкеты</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>CR анкеты</th>
+        <th>Продажи / мес.</th>
+        <th>Доход партнёра / мес.</th>
+        <th>Доход / год</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>10%</td>
+        <td><span class="num">42</span></td>
+        <td><span class="num amber">19 110 ₽</span></td>
+        <td>229 320 ₽</td>
+        <td><div class="sens-bar-wrap"><div class="sens-bar" style="width:17%"></div></div></td>
+      </tr>
+      <tr>
+        <td>20%</td>
+        <td><span class="num">83</span></td>
+        <td><span class="num amber">37 765 ₽</span></td>
+        <td>453 180 ₽</td>
+        <td><div class="sens-bar-wrap"><div class="sens-bar" style="width:34%"></div></div></td>
+      </tr>
+      <tr style="background: rgba(16,185,129,0.06);">
+        <td><strong>30% <span class="tag fact" style="font-size:10px">базовый</span></strong></td>
+        <td><span class="num green">125</span></td>
+        <td><span class="num green">56 875 ₽</span></td>
+        <td><strong>682 500 ₽</strong></td>
+        <td><div class="sens-bar-wrap"><div class="sens-bar" style="width:51%"></div></div></td>
+      </tr>
+      <tr>
+        <td>40%</td>
+        <td><span class="num">166</span></td>
+        <td><span class="num">75 530 ₽</span></td>
+        <td>906 360 ₽</td>
+        <td><div class="sens-bar-wrap"><div class="sens-bar" style="width:68%"></div></div></td>
+      </tr>
+      <tr>
+        <td>50%</td>
+        <td><span class="num">208</span></td>
+        <td><span class="num">94 640 ₽</span></td>
+        <td>1 135 680 ₽</td>
+        <td><div class="sens-bar-wrap"><div class="sens-bar" style="width:85%"></div></div></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ЭКОНОМИКА ПОЛИСА -->
+  <div class="section-title"><span>Экономика</span> · структура комиссии</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Параметр</th>
+        <th>Значение</th>
+        <th>Примечание</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Среднее КВ ИНСАП на 1 полис</td>
+        <td><span class="num blue">650 ₽</span></td>
+        <td>данные ИНСАП</td>
+      </tr>
+      <tr>
+        <td>Доля партнёра в КВ</td>
+        <td><span class="num amber">70%</span></td>
+        <td>договорная ставка</td>
+      </tr>
+      <tr>
+        <td>Доход партнёра на 1 полис</td>
+        <td><span class="num green">455 ₽</span></td>
+        <td>650 × 70%</td>
+      </tr>
+      <tr>
+        <td>Удержание ИНСАП</td>
+        <td><span class="num">195 ₽</span></td>
+        <td>650 × 30% · комиссия площадки</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ЦЕННОСТЬ -->
+  <div class="section-title"><span>Ценность для партнёра</span> · нефинансовые выгоды</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Параметр</th>
+        <th>Без партнёрства</th>
+        <th>С ИНСАП</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Монетизация базы клиентов</td>
+        <td style="color:var(--muted)">0 ₽</td>
+        <td><span class="num green">229К – 1.1М ₽/год</span></td>
+      </tr>
+      <tr>
+        <td>Клиент оформляет ОСАГО</td>
+        <td style="color:var(--red)">Уходит к конкурентам</td>
+        <td style="color:var(--accent2)">Остаётся в экосистеме Тебойл</td>
+      </tr>
+      <tr>
+        <td>Push-уведомления</td>
+        <td style="color:var(--muted)">Не монетизированы</td>
+        <td style="color:var(--accent2)">Конвертируются в доход</td>
+      </tr>
+      <tr>
+        <td>Затраты на интеграцию</td>
+        <td>—</td>
+        <td style="color:var(--accent2)">Минимальные · ready-made витрина</td>
+      </tr>
+      <tr>
+        <td>Лояльность клиентов</td>
+        <td style="color:var(--muted)">Нейтральная</td>
+        <td style="color:var(--accent2)">Банк помогает клиенту с ОСАГО</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>Допущения и источники:</strong> База 800 000 клиентов, доставляемость push 78%, CTR 10% — данные Тебойл Рус. КВ ИНСАП 650 руб./полис, доля партнёра 70%, CR анкета → оплата 8% — данные ИНСАП. CR клик → анкета 30% — допущение, ключевой параметр для уточнения по итогам первого месяца работы. Расчёт носит прогнозный характер; равномерное распределение дат истечения полисов по месяцам принято за рабочую гипотезу.
+  </div>
+
+</div>
+</body>
+</html>
