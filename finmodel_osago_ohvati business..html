@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Финмодель ИНСАП × Охвати Бизнес — ОСАГО</title>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1a1a24;
+  --border: #2a2a3a;
+  --text: #e8e8f0;
+  --text2: #8888a0;
+  --accent: #ff3b5c;
+  --accent2: #ff6b81;
+  --green: #34d399;
+  --green-dim: rgba(52,211,153,.12);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,.1);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251,191,36,.1);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Onest',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+  min-height:100vh;
+}
+.container { max-width:1100px; margin:0 auto; padding:40px 24px 80px; }
+
+/* Header */
+.header {
+  text-align:center;
+  margin-bottom:48px;
+  position:relative;
+}
+.header::before {
+  content:'';
+  position:absolute;
+  top:-80px; left:50%; transform:translateX(-50%);
+  width:600px; height:400px;
+  background:radial-gradient(ellipse, rgba(255,59,92,.08) 0%, transparent 70%);
+  pointer-events:none;
+}
+.logo-row {
+  display:inline-flex; align-items:center; gap:8px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:40px;
+  padding:8px 20px;
+  font-size:13px;
+  color:var(--text2);
+  margin-bottom:20px;
+}
+.logo-row .dot { width:6px;height:6px;border-radius:50%;background:var(--accent); }
+h1 {
+  font-size:clamp(28px,4vw,42px);
+  font-weight:800;
+  letter-spacing:-.02em;
+  line-height:1.15;
+  margin-bottom:10px;
+}
+h1 span { color:var(--accent); }
+.subtitle { color:var(--text2); font-size:15px; }
+
+/* Cards */
+.card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:28px;
+  margin-bottom:20px;
+}
+.card-title {
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--text2);
+  margin-bottom:20px;
+  display:flex; align-items:center; gap:8px;
+}
+.card-title .icon {
+  width:20px;height:20px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;
+}
+
+/* Tables */
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th {
+  text-align:left;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--text2);
+  padding:8px 12px;
+  border-bottom:1px solid var(--border);
+}
+th.num { text-align:right; }
+td {
+  padding:9px 12px;
+  border-bottom:1px solid rgba(42,42,58,.4);
+  vertical-align:top;
+}
+td.num { text-align:right; font-variant-numeric:tabular-nums; font-weight:500; }
+td.label { color:var(--text2); font-size:13px; }
+tr.highlight td { background:var(--green-dim); font-weight:600; }
+tr.highlight td.num { color:var(--green); }
+tr.section td {
+  font-size:11px; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--text2);
+  padding-top:18px;
+  border-bottom:1px solid var(--border);
+}
+td .comment {
+  display:block;
+  font-size:11px;
+  color:var(--text2);
+  margin-top:2px;
+  font-weight:400;
+}
+.pct { color:var(--blue); }
+.tag {
+  display:inline-block;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.05em;
+  padding:2px 8px;
+  border-radius:4px;
+  text-transform:uppercase;
+}
+.tag-p { background:rgba(251,191,36,.12); color:var(--yellow); }
+.tag-b { background:var(--blue-dim); color:var(--blue); }
+.tag-o { background:var(--green-dim); color:var(--green); }
+
+/* KPI strip */
+.kpi-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;
+  margin-bottom:20px;
+}
+.kpi {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  text-align:center;
+}
+.kpi .value {
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:-.02em;
+  margin-bottom:4px;
+}
+.kpi .value.green { color:var(--green); }
+.kpi .value.accent { color:var(--accent); }
+.kpi .value.blue { color:var(--blue); }
+.kpi .desc { font-size:12px; color:var(--text2); }
+
+/* Funnel visual */
+.funnel { display:flex; flex-direction:column; gap:4px; margin:16px 0; }
+.funnel-step {
+  display:flex; align-items:center; gap:12px;
+  padding:10px 16px;
+  border-radius:8px;
+  background:var(--surface2);
+  transition:transform .15s;
+}
+.funnel-step:hover { transform:translateX(4px); }
+.funnel-bar {
+  height:6px;
+  border-radius:3px;
+  background:var(--accent);
+  transition:width .6s ease;
+  min-width:4px;
+}
+.funnel-label { flex:1; font-size:13px; }
+.funnel-val { font-weight:700; font-variant-numeric:tabular-nums; font-size:14px; }
+
+/* Scenario tabs */
+.tabs {
+  display:flex; gap:6px; margin-bottom:20px;
+}
+.tab {
+  padding:6px 14px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text2);
+  transition:all .15s;
+}
+.tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+.tab:hover:not(.active) { border-color:var(--text2); color:var(--text); }
+
+/* Two-col */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+@media(max-width:700px) { .grid-2 { grid-template-columns:1fr; } }
+
+.divider {
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--border),transparent);
+  margin:36px 0;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="logo-row"><span class="dot"></span> ФИНМОДЕЛЬ</div>
+  <h1>ИНСАП × <span>Охвати Бизнес</span></h1>
+  <div class="subtitle">Монетизация базы юрлиц через продажу полисов ОСАГО</div>
+</div>
+
+<!-- KPI -->
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="value accent">500К</div>
+    <div class="desc">Юрлиц в базе партнёра</div>
+  </div>
+  <div class="kpi">
+    <div class="value accent">700К</div>
+    <div class="desc">Легковых авто</div>
+  </div>
+  <div class="kpi">
+    <div class="value blue">650 ₽</div>
+    <div class="desc">КВ от СК за полис</div>
+  </div>
+  <div class="kpi">
+    <div class="value green">195 ₽</div>
+    <div class="desc">Маржа ИНСАП / полис (30%)</div>
+  </div>
+</div>
+
+<!-- Вводные -->
+<div class="card">
+  <div class="card-title"><span class="icon" style="background:var(--blue-dim);color:var(--blue);">▤</span> Вводные данные</div>
+  <table>
+    <tr><th>Параметр</th><th class="num">Значение</th><th>Комментарий</th></tr>
+    <tr><td>База юрлиц партнёра</td><td class="num">500 000</td><td class="label">Охвати Бизнес</td></tr>
+    <tr><td>Легковых авто в базе</td><td class="num">700 000</td><td class="label">~1.4 авто/юрлицо</td></tr>
+    <tr><td>КВ ИНСАП от СК</td><td class="num">650 ₽</td><td class="label">Средняя комиссия</td></tr>
+    <tr><td>Email — охват / конверсия</td><td class="num">50 000 / <span class="pct">3.0%</span></td><td class="label">1 500 лидов за волну</td></tr>
+    <tr><td>SMS — охват / конверсия</td><td class="num">10 000 / <span class="pct">5.0%</span></td><td class="label">500 лидов за волну</td></tr>
+    <tr><td>Доля партнёру</td><td class="num"><span class="pct">70%</span></td><td class="label">От входящего КВ</td></tr>
+    <tr><td>Конверсия анкета → оплата</td><td class="num"><span class="pct">8.0%</span></td><td class="label">Бенчмарк ИНСАП</td></tr>
+  </table>
+</div>
+
+<!-- Допущения -->
+<div class="card">
+  <div class="card-title"><span class="icon" style="background:var(--yellow-dim);color:var(--yellow);">⚙</span> Допущения (3 сценария)</div>
+  <table>
+    <tr><th>Параметр</th><th class="num"><span class="tag tag-p">Пессим.</span></th><th class="num"><span class="tag tag-b">Базовый</span></th><th class="num"><span class="tag tag-o">Оптим.</span></th></tr>
+    <tr><td>Доля обогащённых авто</td><td class="num">30%</td><td class="num">50%</td><td class="num">70%</td></tr>
+    <tr><td>Истекающий ОСАГО (30 дн.)</td><td class="num">8.0%</td><td class="num">8.0%</td><td class="num">8.0%</td></tr>
+    <tr><td>Конверсия → оформление</td><td class="num">5.0%</td><td class="num">8.0%</td><td class="num">12.0%</td></tr>
+    <tr><td>Волн рассылок в месяц</td><td class="num">1</td><td class="num">2</td><td class="num">4</td></tr>
+    <tr><td>Горизонт модели</td><td class="num">12 мес.</td><td class="num">12 мес.</td><td class="num">12 мес.</td></tr>
+    <tr><td>Ревалид (пролонгация)</td><td class="num">10%</td><td class="num">20%</td><td class="num">30%</td></tr>
+  </table>
+</div>
+
+<!-- Воронка — базовый сценарий -->
+<div class="card">
+  <div class="card-title"><span class="icon" style="background:rgba(255,59,92,.12);color:var(--accent);">▼</span> Воронка продаж — базовый сценарий (в месяц)</div>
+  <div class="funnel">
+    <div class="funnel-step"><div class="funnel-bar" style="width:100%;"></div><div class="funnel-label">Лиды за волну (email + SMS)</div><div class="funnel-val">2 000</div></div>
+    <div class="funnel-step"><div class="funnel-bar" style="width:85%;"></div><div class="funnel-label">× 2 волны → лидов в месяц</div><div class="funnel-val">4 000</div></div>
+    <div class="funnel-step"><div class="funnel-bar" style="width:70%;"></div><div class="funnel-label">× 1.4 → авто у лидов</div><div class="funnel-val">5 600</div></div>
+    <div class="funnel-step"><div class="funnel-bar" style="width:45%;"></div><div class="funnel-label">× 50% обогащение данных</div><div class="funnel-val">2 800</div></div>
+    <div class="funnel-step"><div class="funnel-bar" style="width:15%;"></div><div class="funnel-label">× 8% истекающий ОСАГО</div><div class="funnel-val">224</div></div>
+    <div class="funnel-step" style="background:var(--green-dim);"><div class="funnel-bar" style="width:5%;background:var(--green);"></div><div class="funnel-label" style="color:var(--green);font-weight:600;">× 8% конверсия → полисов/мес</div><div class="funnel-val" style="color:var(--green);">18</div></div>
+  </div>
+</div>
+
+<!-- Финрезультат -->
+<div class="grid-2">
+
+<div class="card">
+  <div class="card-title"><span class="icon" style="background:rgba(255,59,92,.12);color:var(--accent);">①</span> Канал 1: Рассылки (за год)</div>
+  <table>
+    <tr><th></th><th class="num"><span class="tag tag-p">П</span></th><th class="num"><span class="tag tag-b">Б</span></th><th class="num"><span class="tag tag-o">О</span></th></tr>
+    <tr><td>Полисов</td><td class="num">44</td><td class="num">258</td><td class="num">1 174</td></tr>
+    <tr><td>Выручка КВ</td><td class="num">28 829 ₽</td><td class="num">167 731 ₽</td><td class="num">763 177 ₽</td></tr>
+    <tr><td>Партнёру (70%)</td><td class="num">20 180 ₽</td><td class="num">117 412 ₽</td><td class="num">534 224 ₽</td></tr>
+    <tr class="highlight"><td>Маржа ИНСАП/год</td><td class="num">8 649 ₽</td><td class="num">50 319 ₽</td><td class="num">228 953 ₽</td></tr>
+    <tr class="highlight"><td>Маржа ИНСАП/мес</td><td class="num">721 ₽</td><td class="num">4 193 ₽</td><td class="num">19 079 ₽</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <div class="card-title"><span class="icon" style="background:var(--green-dim);color:var(--green);">②</span> Канал 2: Обогащение базы (за год)</div>
+  <table>
+    <tr><th></th><th class="num">Значение</th></tr>
+    <tr><td>Авто с данными (40%)</td><td class="num">280 000</td></tr>
+    <tr><td>Истекающий ОСАГО/мес</td><td class="num">22 400</td></tr>
+    <tr><td>Конверсия (холодная)</td><td class="num"><span class="pct">3.0%</span></td></tr>
+    <tr><td>Полисов/мес</td><td class="num">672</td></tr>
+    <tr><td>Выручка КВ/год</td><td class="num">5 241 600 ₽</td></tr>
+    <tr><td>Партнёру (70%)/год</td><td class="num">3 669 120 ₽</td></tr>
+    <tr class="highlight"><td>Маржа ИНСАП/год</td><td class="num">1 572 480 ₽</td></tr>
+    <tr class="highlight"><td>Маржа ИНСАП/мес</td><td class="num">131 040 ₽</td></tr>
+  </table>
+</div>
+
+</div>
+
+<div class="divider"></div>
+
+<!-- ИТОГО -->
+<div class="card" style="border-color:var(--green);border-width:2px;">
+  <div class="card-title" style="color:var(--green);font-size:13px;letter-spacing:.1em;">◆ Итоговая сводка — маржа ИНСАП (оба канала)</div>
+  <table>
+    <tr><th></th><th class="num"><span class="tag tag-p">Пессим.</span></th><th class="num"><span class="tag tag-b">Базовый</span></th><th class="num"><span class="tag tag-o">Оптим.</span></th></tr>
+    <tr class="section"><td colspan="4">Канал 1: Рассылки</td></tr>
+    <tr><td>Маржа/год</td><td class="num">8 649 ₽</td><td class="num">50 319 ₽</td><td class="num">228 953 ₽</td></tr>
+    <tr><td>Маржа/мес</td><td class="num">721 ₽</td><td class="num">4 193 ₽</td><td class="num">19 079 ₽</td></tr>
+    <tr class="section"><td colspan="4">Канал 2: Обогащение базы</td></tr>
+    <tr><td>Маржа/год</td><td class="num">1 572 480 ₽</td><td class="num">1 572 480 ₽</td><td class="num">1 572 480 ₽</td></tr>
+    <tr><td>Маржа/мес</td><td class="num">131 040 ₽</td><td class="num">131 040 ₽</td><td class="num">131 040 ₽</td></tr>
+    <tr class="highlight" style="font-size:16px;"><td><strong>ИТОГО маржа/год</strong></td><td class="num"><strong>1 581 129 ₽</strong></td><td class="num"><strong>1 622 799 ₽</strong></td><td class="num"><strong>1 801 433 ₽</strong></td></tr>
+    <tr class="highlight" style="font-size:16px;"><td><strong>ИТОГО маржа/мес</strong></td><td class="num"><strong>131 761 ₽</strong></td><td class="num"><strong>135 233 ₽</strong></td><td class="num"><strong>150 119 ₽</strong></td></tr>
+  </table>
+</div>
+
+<div style="text-align:center;margin-top:32px;color:var(--text2);font-size:12px;">
+  ИНСАП × Охвати Бизнес — Финмодель ОСАГО &middot; 2025
+</div>
+
+</div>
+</body>
+</html>
