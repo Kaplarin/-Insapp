@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Финмодель: Водители России × ИНСАП</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0f14;
+    --surface: #141820;
+    --surface-alt: #1a1f2b;
+    --border: #252b3a;
+    --text: #e4e7ed;
+    --text-dim: #8891a5;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59,130,246,0.15);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --amber: #f59e0b;
+    --amber-dim: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px 24px 60px;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; }
+
+  /* ─── HEADER ─── */
+  .header {
+    position: relative;
+    padding: 40px 0 32px;
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: -120px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .header-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    position: relative; z-index: 1;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    position: relative; z-index: 1;
+    line-height: 1.2;
+  }
+  .header h1 span { color: var(--accent); }
+  .header-meta {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    position: relative; z-index: 1;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ─── SECTION ─── */
+  .section {
+    margin-bottom: 32px;
+  }
+  .section-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: var(--text-dim);
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-left: 4px;
+  }
+
+  /* ─── ASSUMPTION CARDS ─── */
+  .assumptions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 700px) {
+    .assumptions-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .assumption-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .assumption-card:hover { border-color: var(--accent); }
+  .assumption-card .label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .assumption-card .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .assumption-card .note {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ─── TABLE ─── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  thead th {
+    background: var(--surface-alt);
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  thead th:last-child { text-align: right; }
+  tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td:first-child {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    color: var(--text);
+  }
+  tbody td:last-child {
+    text-align: right;
+    font-weight: 700;
+  }
+  tbody tr:hover { background: rgba(59,130,246,0.04); }
+
+  .highlight-row td {
+    background: var(--accent-glow) !important;
+    color: var(--accent) !important;
+  }
+
+  /* ─── TOTALS BAR ─── */
+  .totals-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .total-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+  }
+  .total-card.primary {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, var(--accent-glow), var(--surface));
+  }
+  .total-card .total-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .total-card .total-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+  }
+  .total-card.primary .total-value { color: var(--accent); }
+
+  /* ─── RISK / VERDICT ─── */
+  .risk-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+  }
+  .risk-block .risk-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--amber);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .risk-block ul {
+    list-style: none;
+    padding: 0;
+  }
+  .risk-block li {
+    font-size: 14px;
+    color: var(--text-dim);
+    padding: 4px 0 4px 20px;
+    position: relative;
+  }
+  .risk-block li::before {
+    content: '⚠';
+    position: absolute;
+    left: 0;
+    font-size: 12px;
+  }
+
+  .verdict {
+    margin-top: 16px;
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .verdict-go {
+    background: var(--green-dim);
+    border: 1px solid rgba(34,197,94,0.3);
+    color: var(--green);
+  }
+
+  /* ─── BAR CHART ─── */
+  .chart-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    height: 200px;
+    margin-top: 16px;
+    padding-top: 12px;
+  }
+  .bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .bar {
+    width: 100%;
+    max-width: 80px;
+    background: linear-gradient(180deg, var(--accent) 0%, rgba(59,130,246,0.5) 100%);
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    transition: height 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    min-height: 4px;
+  }
+  .bar-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .bar-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 10px;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .threshold-line {
+    width: 100%;
+    position: relative;
+    margin-bottom: 8px;
+  }
+  .threshold-line::after {
+    content: '← порог 100 полисов';
+    position: absolute;
+    right: 0;
+    top: -20px;
+    font-size: 10px;
+    color: var(--red);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+  }
+  .threshold-line::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    border-top: 2px dashed var(--red);
+    opacity: 0.5;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-tag">Внутренний документ · ИНСАП</div>
+    <h1>Финмодель: <span>Водители России</span></h1>
+    <div class="header-meta">API-партнёрство · ОСАГО · Май–Декабрь 2025</div>
+  </div>
+
+  <!-- ДОПУЩЕНИЯ -->
+  <div class="section">
+    <div class="section-title">Допущения</div>
+    <div class="assumptions-grid">
+      <div class="assumption-card">
+        <div class="label">MAU к концу 2025</div>
+        <div class="value">20 000</div>
+        <div class="note">Реалистичный сценарий (vs 100к заявленных)</div>
+      </div>
+      <div class="assumption-card">
+        <div class="label">Доля с госномером</div>
+        <div class="value">40%</div>
+        <div class="note">Необязательное поле на старте</div>
+      </div>
+      <div class="assumption-card">
+        <div class="label">Истекает полис / мес</div>
+        <div class="value">8,3%</div>
+        <div class="note">Равномерное распределение (1/12)</div>
+      </div>
+      <div class="assumption-card">
+        <div class="label">Конверсия из пуша</div>
+        <div class="value">30%</div>
+        <div class="note">Бенч ИНСАП, триггерная</div>
+      </div>
+      <div class="assumption-card">
+        <div class="label">КВ с полиса</div>
+        <div class="value">650 ₽</div>
+        <div class="note">Средняя по ОСАГО</div>
+      </div>
+      <div class="assumption-card">
+        <div class="label">Доход ИНСАП / полис</div>
+        <div class="value">195 ₽</div>
+        <div class="note">30% от КВ (70% → партнёру)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ПРОГНОЗ -->
+  <div class="section">
+    <div class="section-title">Прогноз по периодам</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Период</th>
+            <th>MAU</th>
+            <th>С госномером</th>
+            <th>Истекает / мес</th>
+            <th>Полисов / мес</th>
+            <th>Доход ИНСАП</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Май – Июнь</td>
+            <td>3 000</td>
+            <td>1 200</td>
+            <td>100</td>
+            <td>30</td>
+            <td>5 850 ₽</td>
+          </tr>
+          <tr>
+            <td>Июль – Авг</td>
+            <td>8 000</td>
+            <td>3 200</td>
+            <td>267</td>
+            <td>80</td>
+            <td>15 600 ₽</td>
+          </tr>
+          <tr class="highlight-row">
+            <td>Сент – Окт</td>
+            <td>14 000</td>
+            <td>5 600</td>
+            <td>467</td>
+            <td>140</td>
+            <td>27 300 ₽</td>
+          </tr>
+          <tr>
+            <td>Ноябрь – Дек</td>
+            <td>20 000</td>
+            <td>8 000</td>
+            <td>667</td>
+            <td>200</td>
+            <td>39 000 ₽</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="section">
+    <div class="section-title">Динамика полисов / мес</div>
+    <div class="chart-section">
+      <div class="chart-bars" style="position: relative;">
+        <!-- threshold at 100 polisov = 50% height -->
+        <div style="position:absolute; left:0; right:0; bottom: calc(50% + 0px); border-top: 2px dashed rgba(239,68,68,0.4); z-index:1;">
+          <span style="position:absolute; right:0; top:-18px; font-size:10px; color:var(--red); font-family:'JetBrains Mono',monospace;">порог 100 полисов/мес</span>
+        </div>
+        <div class="bar-group">
+          <div class="bar-value">30</div>
+          <div class="bar" style="height: 15%;"></div>
+          <div class="bar-label">Май–<br>Июн</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-value">80</div>
+          <div class="bar" style="height: 40%;"></div>
+          <div class="bar-label">Июл–<br>Авг</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-value">140</div>
+          <div class="bar" style="height: 70%; background: linear-gradient(180deg, var(--green) 0%, rgba(34,197,94,0.5) 100%);"></div>
+          <div class="bar-label">Сен–<br>Окт</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-value">200</div>
+          <div class="bar" style="height: 100%; background: linear-gradient(180deg, var(--green) 0%, rgba(34,197,94,0.5) 100%);"></div>
+          <div class="bar-label">Ноя–<br>Дек</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ИТОГО -->
+  <div class="section">
+    <div class="section-title">Итого за 2025 (8 мес.)</div>
+    <div class="totals-bar">
+      <div class="total-card">
+        <div class="total-label">Полисов</div>
+        <div class="total-value">~450</div>
+      </div>
+      <div class="total-card primary">
+        <div class="total-label">Доход ИНСАП</div>
+        <div class="total-value">~88 000 ₽</div>
+      </div>
+      <div class="total-card">
+        <div class="total-label">Затраты на вход</div>
+        <div class="total-value" style="color: var(--green);">0 ₽</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- РИСКИ -->
+  <div class="section">
+    <div class="section-title">Риски и вердикт</div>
+    <div class="risk-block">
+      <div class="risk-label">Ключевые риски</div>
+      <ul>
+        <li>Платформа стартует с нуля 12 мая — база не подтверждена</li>
+        <li>100к MAU к концу года — ничем не подкреплённый прогноз</li>
+        <li>Канал привлечения пользователей — не раскрыт</li>
+        <li>Порог 100 полисов/мес — не раньше сентября</li>
+        <li>Первые 3–4 месяца ниже внутреннего порога рентабельности</li>
+      </ul>
+    </div>
+    <div class="verdict verdict-go">
+      ✓ Начинать — стоимость входа нулевая, но без иллюзий на H1 2025
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
