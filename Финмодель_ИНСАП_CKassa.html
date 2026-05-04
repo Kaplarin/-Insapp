@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ИНСАП — Финмодель CKassa</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0b0f;
+  --surface: #12131a;
+  --surface2: #1a1b25;
+  --border: #2a2b38;
+  --text: #e8e9f0;
+  --text2: #8b8d9e;
+  --accent: #00d4aa;
+  --accent2: #00b894;
+  --red: #ff6b6b;
+  --orange: #ffa94d;
+  --blue: #74b9ff;
+  --purple: #a29bfe;
+  --yellow: #ffd43b;
+  --green: #51cf66;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Manrope', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.noise {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.glow-orb {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow-orb.tl { top: -200px; left: -200px; background: var(--accent); }
+.glow-orb.br { bottom: -300px; right: -200px; background: var(--purple); }
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+header {
+  margin-bottom: 48px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.logo-block {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo-icon {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, var(--accent), var(--blue));
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--bg);
+  letter-spacing: -1px;
+}
+
+h1 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--text), var(--text2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+
+.date-badge {
+  padding: 8px 16px;
+  border-radius: 100px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text2);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 32px;
+  border: 1px solid var(--border);
+  width: fit-content;
+}
+
+.tab {
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s;
+  color: var(--text2);
+  border: none;
+  background: transparent;
+  font-family: 'Manrope', sans-serif;
+}
+
+.tab:hover { color: var(--text); }
+
+.tab.active {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+/* KPI Cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.2s;
+}
+
+.kpi:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.kpi::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
+.kpi.green::after { background: var(--accent); }
+.kpi.blue::after { background: var(--blue); }
+.kpi.purple::after { background: var(--purple); }
+.kpi.orange::after { background: var(--orange); }
+.kpi.yellow::after { background: var(--yellow); }
+
+.kpi-label {
+  font-size: 12px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.kpi-value {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -1px;
+}
+
+.kpi-sub {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 6px;
+}
+
+.kpi-value.accent { color: var(--accent); }
+.kpi-value.blue { color: var(--blue); }
+.kpi-value.purple { color: var(--purple); }
+.kpi-value.orange { color: var(--orange); }
+.kpi-value.yellow { color: var(--yellow); }
+
+/* Sections */
+.section {
+  margin-bottom: 36px;
+}
+
+.section-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Charts */
+.chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+@media (max-width: 860px) {
+  .chart-row { grid-template-columns: 1fr; }
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.chart-card h3 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: var(--text2);
+}
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 180px;
+  padding-top: 20px;
+}
+
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  min-height: 3px;
+}
+
+.bar.g { background: linear-gradient(180deg, var(--accent), var(--accent2)); }
+.bar.b { background: linear-gradient(180deg, var(--blue), #5a9fd4); }
+.bar.p { background: linear-gradient(180deg, var(--purple), #8a83e0); }
+.bar.o { background: linear-gradient(180deg, var(--orange), #e09040); }
+
+.bar-label {
+  font-size: 10px;
+  color: var(--text2);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.bar-val {
+  font-size: 10px;
+  color: var(--text);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Donut */
+.donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.donut-svg { flex-shrink: 0; }
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend-pct {
+  color: var(--text2);
+  margin-left: auto;
+  font-weight: 600;
+  font-size: 13px;
+  min-width: 45px;
+  text-align: right;
+}
+
+/* Table */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+thead th {
+  background: var(--surface2);
+  padding: 14px 16px;
+  text-align: right;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+}
+
+thead th:first-child {
+  text-align: left;
+  min-width: 200px;
+}
+
+tbody td {
+  padding: 10px 16px;
+  text-align: right;
+  border-bottom: 1px solid rgba(42,43,56,0.5);
+}
+
+tbody td:first-child {
+  text-align: left;
+  color: var(--text2);
+  font-weight: 500;
+}
+
+tbody tr:hover { background: rgba(0,212,170,0.03); }
+
+tr.section-row td {
+  font-weight: 700;
+  color: var(--text);
+  padding-top: 18px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--border);
+}
+
+tr.total-row td {
+  font-weight: 700;
+  color: var(--accent);
+  border-top: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+tr.profit-row td {
+  font-weight: 700;
+  color: var(--green);
+}
+
+tr.sub td:first-child {
+  padding-left: 28px;
+  font-size: 12px;
+}
+
+td.total-col {
+  background: rgba(0,212,170,0.04);
+  font-weight: 600;
+}
+
+/* Scenario comparison */
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+@media (max-width: 700px) {
+  .scenario-grid { grid-template-columns: 1fr; }
+}
+
+.scenario-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  position: relative;
+}
+
+.scenario-card.pessimist { border-top: 3px solid var(--red); }
+.scenario-card.base { border-top: 3px solid var(--accent); }
+.scenario-card.optimist { border-top: 3px solid var(--yellow); }
+
+.scenario-name {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.scenario-name.pessimist { color: var(--red); }
+.scenario-name.base { color: var(--accent); }
+.scenario-name.optimist { color: var(--yellow); }
+
+.scenario-metric {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(42,43,56,0.5);
+  font-size: 13px;
+}
+
+.scenario-metric:last-child { border: none; }
+
+.scenario-metric .label { color: var(--text2); }
+.scenario-metric .val { font-weight: 600; }
+
+/* Assumptions */
+.assumptions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.assumption-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.assumption-card h3 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  color: var(--text2);
+}
+
+.assumption-row {
+  display: grid;
+  grid-template-columns: 1fr 70px 70px 70px;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(42,43,56,0.3);
+  font-size: 12px;
+  align-items: center;
+}
+
+.assumption-row:last-child { border: none; }
+
+.assumption-row .ah {
+  font-weight: 600;
+  color: var(--text2);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.assumption-row .al { color: var(--text2); }
+
+.assumption-row .av {
+  text-align: center;
+  font-weight: 500;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.av.pes { background: rgba(255,107,107,0.1); color: var(--red); }
+.av.bas { background: rgba(0,212,170,0.1); color: var(--accent); }
+.av.opt { background: rgba(255,212,59,0.1); color: var(--yellow); }
+
+/* Insights */
+.insights {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 36px;
+}
+
+.insights h3 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.insight-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(42,43,56,0.4);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text2);
+}
+
+.insight-item:last-child { border: none; }
+
+.insight-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  animation: fadeUp 0.6s ease forwards;
+  opacity: 0;
+}
+
+.fade-up:nth-child(1) { animation-delay: 0.05s; }
+.fade-up:nth-child(2) { animation-delay: 0.1s; }
+.fade-up:nth-child(3) { animation-delay: 0.15s; }
+.fade-up:nth-child(4) { animation-delay: 0.2s; }
+.fade-up:nth-child(5) { animation-delay: 0.25s; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+footer {
+  text-align: center;
+  padding: 40px 0 20px;
+  color: var(--text2);
+  font-size: 12px;
+  opacity: 0.5;
+}
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="glow-orb tl"></div>
+<div class="glow-orb br"></div>
+
+<div class="container">
+
+<header class="fade-up">
+  <div class="logo-block">
+    <div class="logo-icon">И</div>
+    <div>
+      <h1>ИНСАП — CKassa</h1>
+      <div class="subtitle">Монетизация водителей такси через страховые продукты</div>
+    </div>
+  </div>
+  <div class="date-badge">Апрель 2026 · Горизонт 12 мес.</div>
+</header>
+
+<div class="tabs fade-up">
+  <button class="tab active" onclick="switchTab('overview')">Сводка</button>
+  <button class="tab" onclick="switchTab('base')">P&L Базовый</button>
+  <button class="tab" onclick="switchTab('scenarios')">Сценарии</button>
+  <button class="tab" onclick="switchTab('assumptions')">Допущения</button>
+</div>
+
+<!-- OVERVIEW -->
+<div class="tab-content active" id="tab-overview">
+
+<div class="kpi-grid fade-up">
+  <div class="kpi green">
+    <div class="kpi-label">Выручка (КВ) — Базовый</div>
+    <div class="kpi-value accent">32,8 млн ₽</div>
+    <div class="kpi-sub">за 12 месяцев</div>
+  </div>
+  <div class="kpi blue">
+    <div class="kpi-label">Чистая прибыль</div>
+    <div class="kpi-value blue">31,1 млн ₽</div>
+    <div class="kpi-sub">маржа 94,9%</div>
+  </div>
+  <div class="kpi purple">
+    <div class="kpi-label">Полисов продано</div>
+    <div class="kpi-value purple">25 304</div>
+    <div class="kpi-sub">~2 109 / мес.</div>
+  </div>
+  <div class="kpi orange">
+    <div class="kpi-label">Страховые премии</div>
+    <div class="kpi-value orange">188,1 млн ₽</div>
+    <div class="kpi-sub">объём рынка через платформу</div>
+  </div>
+  <div class="kpi yellow">
+    <div class="kpi-label">Окупаемость</div>
+    <div class="kpi-value yellow">&lt; 1 мес.</div>
+    <div class="kpi-sub">ROI 1 853%</div>
+  </div>
+</div>
+
+<!-- Charts row -->
+<div class="chart-row fade-up">
+  <div class="chart-card">
+    <h3>Выручка по месяцам (Базовый), тыс. ₽</h3>
+    <div class="bar-chart" id="revenueChart"></div>
+  </div>
+  <div class="chart-card">
+    <h3>Структура выручки по продуктам</h3>
+    <div class="donut-wrap">
+      <svg class="donut-svg" width="160" height="160" viewBox="0 0 160 160" id="donutChart"></svg>
+      <div class="donut-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>ОСАГО годовой<span class="legend-pct">32,3%</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>ОСАГО краткоср.<span class="legend-pct">1,2%</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>КАСКО<span class="legend-pct">46,9%</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>ОСГОП<span class="legend-pct">19,5%</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="chart-row fade-up">
+  <div class="chart-card">
+    <h3>Накопленная прибыль (Базовый), млн ₽</h3>
+    <div class="bar-chart" id="cumulativeChart"></div>
+  </div>
+  <div class="chart-card">
+    <h3>Сравнение сценариев — прибыль 12 мес.</h3>
+    <div class="bar-chart" id="scenarioCompChart"></div>
+  </div>
+</div>
+
+<div class="insights fade-up">
+  <h3><span style="font-size:18px">📌</span> Ключевые выводы</h3>
+  <div class="insight-item"><div class="insight-bullet"></div>Основной драйвер — КАСКО (46,9% выручки в базовом): низкая конверсия, но очень высокий КВ ~20 000 ₽ за полис</div>
+  <div class="insight-item"><div class="insight-bullet"></div>ОСАГО годовой — второй по значимости (32,3%): высокий средний чек 21 000 ₽ × КВ 15%</div>
+  <div class="insight-item"><div class="insight-bullet"></div>ОСГОП — compliance-driven продукт с высокой конверсией 7%, камеры с сентября 2026 усилят спрос</div>
+  <div class="insight-item"><div class="insight-bullet"></div>Краткосрочный ОСАГО — массовый канал (7 697 полисов), но КВ всего ~52 ₽ за полис</div>
+  <div class="insight-item"><div class="insight-bullet"></div>Пролонгации (LTV) не учтены — потенциальный upside. Факт 2021: конверсия 0,67%</div>
+</div>
+
+</div>
+
+<!-- BASE P&L -->
+<div class="tab-content" id="tab-base">
+<div class="section fade-up">
+  <div class="section-title"><div class="dot"></div>P&L Базовый сценарий — помесячно</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Показатель</th>
+          <th>Мес 1</th><th>Мес 2</th><th>Мес 3</th><th>Мес 4</th><th>Мес 5</th><th>Мес 6</th>
+          <th>Мес 7</th><th>Мес 8</th><th>Мес 9</th><th>Мес 10</th><th>Мес 11</th><th>Мес 12</th>
+          <th>ИТОГО</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="section-row"><td colspan="14">Аудитория</td></tr>
+        <tr><td>MAU водителей</td><td>40 000</td><td>40 200</td><td>40 401</td><td>40 603</td><td>40 806</td><td>41 010</td><td>41 215</td><td>41 421</td><td>41 628</td><td>41 836</td><td>42 045</td><td>42 255</td><td class="total-col">—</td></tr>
+        <tr class="sub"><td>Клики с баннера</td><td>9 600</td><td>9 648</td><td>9 696</td><td>9 745</td><td>9 793</td><td>9 842</td><td>9 892</td><td>9 941</td><td>9 991</td><td>10 041</td><td>10 091</td><td>10 141</td><td class="total-col">118 421</td></tr>
+        <tr class="sub"><td>Клики с пушей</td><td>6 000</td><td>6 030</td><td>6 060</td><td>6 090</td><td>6 121</td><td>6 152</td><td>6 182</td><td>6 213</td><td>6 244</td><td>6 275</td><td>6 307</td><td>6 338</td><td class="total-col">74 012</td></tr>
+        <tr><td><b>Итого кликов</b></td><td>15 600</td><td>15 678</td><td>15 756</td><td>15 835</td><td>15 914</td><td>15 994</td><td>16 074</td><td>16 154</td><td>16 235</td><td>16 316</td><td>16 398</td><td>16 479</td><td class="total-col"><b>192 433</b></td></tr>
+
+        <tr class="section-row"><td colspan="14">ОСАГО годовой</td></tr>
+        <tr class="sub"><td>Продажи, шт.</td><td>273</td><td>274</td><td>276</td><td>277</td><td>278</td><td>280</td><td>281</td><td>283</td><td>284</td><td>286</td><td>287</td><td>288</td><td class="total-col">3 367</td></tr>
+        <tr class="sub"><td>КВ / выручка, ₽</td><td>859 950</td><td>863 100</td><td>869 400</td><td>872 550</td><td>875 700</td><td>882 000</td><td>885 150</td><td>891 450</td><td>894 600</td><td>900 900</td><td>904 050</td><td>907 200</td><td class="total-col">10 606 050</td></tr>
+
+        <tr class="section-row"><td colspan="14">ОСАГО краткосрочный</td></tr>
+        <tr class="sub"><td>Продажи, шт.</td><td>624</td><td>627</td><td>630</td><td>633</td><td>637</td><td>640</td><td>643</td><td>646</td><td>649</td><td>653</td><td>656</td><td>659</td><td class="total-col">7 697</td></tr>
+        <tr class="sub"><td>КВ / выручка, ₽</td><td>32 760</td><td>32 918</td><td>33 075</td><td>33 233</td><td>33 443</td><td>33 600</td><td>33 758</td><td>33 915</td><td>34 073</td><td>34 283</td><td>34 440</td><td>34 598</td><td class="total-col">404 093</td></tr>
+
+        <tr class="section-row"><td colspan="14">КАСКО</td></tr>
+        <tr class="sub"><td>Продажи, шт.</td><td>62</td><td>63</td><td>63</td><td>63</td><td>64</td><td>64</td><td>64</td><td>65</td><td>65</td><td>65</td><td>66</td><td>66</td><td class="total-col">770</td></tr>
+        <tr class="sub"><td>КВ / выручка, ₽</td><td>1 240 000</td><td>1 260 000</td><td>1 260 000</td><td>1 260 000</td><td>1 280 000</td><td>1 280 000</td><td>1 280 000</td><td>1 300 000</td><td>1 300 000</td><td>1 300 000</td><td>1 320 000</td><td>1 320 000</td><td class="total-col">15 400 000</td></tr>
+
+        <tr class="section-row"><td colspan="14">ОСГОП</td></tr>
+        <tr class="sub"><td>Продажи, шт.</td><td>1 092</td><td>1 097</td><td>1 103</td><td>1 108</td><td>1 114</td><td>1 120</td><td>1 125</td><td>1 131</td><td>1 136</td><td>1 142</td><td>1 148</td><td>1 154</td><td class="total-col">13 470</td></tr>
+        <tr class="sub"><td>КВ / выручка, ₽</td><td>519 792</td><td>522 172</td><td>525 028</td><td>527 408</td><td>530 264</td><td>533 120</td><td>535 500</td><td>538 356</td><td>540 736</td><td>543 592</td><td>546 448</td><td>549 304</td><td class="total-col">6 411 720</td></tr>
+
+        <tr class="total-row"><td><b>Общая выручка (КВ), ₽</b></td><td>2 652 502</td><td>2 678 190</td><td>2 687 503</td><td>2 693 191</td><td>2 719 407</td><td>2 728 720</td><td>2 734 408</td><td>2 763 721</td><td>2 769 409</td><td>2 778 775</td><td>2 804 938</td><td>2 811 102</td><td class="total-col"><b>32 821 863</b></td></tr>
+
+        <tr class="section-row"><td colspan="14">Расходы</td></tr>
+        <tr class="sub"><td>Разовые (доработка)</td><td>300 000</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td class="total-col">300 000</td></tr>
+        <tr class="sub"><td>Ежемесячные OpEx</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td class="total-col">1 380 000</td></tr>
+        <tr><td><b>Итого расходов, ₽</b></td><td>415 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td>115 000</td><td class="total-col"><b>1 680 000</b></td></tr>
+
+        <tr class="section-row"><td colspan="14">Финансовый результат</td></tr>
+        <tr class="profit-row"><td>Прибыль / (убыток), ₽</td><td>2 237 502</td><td>2 563 190</td><td>2 572 503</td><td>2 578 191</td><td>2 604 407</td><td>2 613 720</td><td>2 619 408</td><td>2 648 721</td><td>2 654 409</td><td>2 663 775</td><td>2 689 938</td><td>2 696 102</td><td class="total-col">31 141 863</td></tr>
+        <tr><td>Накопл. прибыль, ₽</td><td>2 237 502</td><td>4 800 692</td><td>7 373 195</td><td>9 951 385</td><td>12 555 792</td><td>15 169 512</td><td>17 788 919</td><td>20 437 640</td><td>23 092 049</td><td>25 755 823</td><td>28 445 761</td><td>31 141 863</td><td class="total-col">—</td></tr>
+        <tr><td>Маржинальность, %</td><td>84,4%</td><td>95,7%</td><td>95,7%</td><td>95,7%</td><td>95,8%</td><td>95,8%</td><td>95,8%</td><td>95,8%</td><td>95,8%</td><td>95,9%</td><td>95,9%</td><td>95,9%</td><td class="total-col">94,9%</td></tr>
+
+        <tr class="section-row"><td colspan="14">Итого</td></tr>
+        <tr><td>Всего полисов</td><td>2 051</td><td>2 061</td><td>2 072</td><td>2 081</td><td>2 093</td><td>2 104</td><td>2 113</td><td>2 125</td><td>2 134</td><td>2 146</td><td>2 157</td><td>2 167</td><td class="total-col"><b>25 304</b></td></tr>
+        <tr><td>Страх. премии, ₽</td><td>15 209 000</td><td>15 345 050</td><td>15 404 900</td><td>15 440 950</td><td>15 580 150</td><td>15 640 000</td><td>15 676 050</td><td>15 835 900</td><td>15 871 950</td><td>15 932 150</td><td>16 071 000</td><td>16 109 850</td><td class="total-col"><b>188 116 950</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- SCENARIOS -->
+<div class="tab-content" id="tab-scenarios">
+<div class="scenario-grid fade-up">
+
+  <div class="scenario-card pessimist">
+    <div class="scenario-name pessimist">Пессимистичный</div>
+    <div class="scenario-metric"><span class="label">Выручка (КВ)</span><span class="val">2,8 млн ₽</span></div>
+    <div class="scenario-metric"><span class="label">Расходы</span><span class="val">0 ₽</span></div>
+    <div class="scenario-metric"><span class="label">Прибыль</span><span class="val" style="color:var(--red)">2,8 млн ₽</span></div>
+    <div class="scenario-metric"><span class="label">Маржа</span><span class="val">100%</span></div>
+    <div class="scenario-metric"><span class="label">Полисов</span><span class="val">3 576</span></div>
+    <div class="scenario-metric"><span class="label">Страх. премии</span><span class="val">23,6 млн ₽</span></div>
+    <div class="scenario-metric"><span class="label">MAU</span><span class="val">35 000</span></div>
+    <div class="scenario-metric"><span class="label">Конверсия ОСАГО</span><span class="val">2,0%</span></div>
+  </div>
+
+  <div class="scenario-card base">
+    <div class="scenario-name base">Базовый</div>
+    <div class="scenario-metric"><span class="label">Выручка (КВ)</span><span class="val">32,8 млн ₽</span></div>
+    <div class="scenario-metric"><span class="label">Расходы</span><span class="val">1,68 млн ₽</span></div>
+    <div class="scenario-metric"><span class="label">Прибыль</span><span class="val" style="color:var(--accent)">31,1 млн ₽</span></div>
+    <div class="scenario-metric"><span class="label">Маржа</span><span class="val">94,9%</span></div>
+    <div class="scenario-metric"><span class="label">Полисов</span><span class="val">25 304</span></div>
+    <div class="scenario-metric"><span class="label">Страх. премии</span><span class="val">188,1 млн ₽</span></div>
+    <div class="scenario-metric"><span class="label">MAU</span><span class="val">40 000</span></div>
+    <div class="scenario-metric"><span class="label">Конверсия ОСАГО</span><span class="val">3,5%</span></div>
+  </div>
+
+  <div class="scenario-card optimist">
+    <div class="scenario-name optimist">Оптимистичный</div>
+    <div class="scenario-metric"><span class="label">Выручка (КВ)</span><span class="val">301,3 млн ₽</span></div>
+    <div class="scenario-metric"><span class="label">Расходы</span><span class="val">3,02 млн ₽</span></div>
+    <div class="scenario-metric"><span class="label">Прибыль</span><span class="val" style="color:var(--yellow)">298,2 млн ₽</span></div>
+    <div class="scenario-metric"><span class="label">Маржа</span><span class="val">99,0%</span></div>
+    <div class="scenario-metric"><span class="label">Полисов</span><span class="val">136 174</span></div>
+    <div class="scenario-metric"><span class="label">Страх. премии</span><span class="val">1 293,9 млн ₽</span></div>
+    <div class="scenario-metric"><span class="label">MAU</span><span class="val">50 000</span></div>
+    <div class="scenario-metric"><span class="label">Конверсия ОСАГО</span><span class="val">5,0%</span></div>
+  </div>
+
+</div>
+
+<!-- Scenario revenue structure -->
+<div class="chart-row fade-up">
+  <div class="chart-card">
+    <h3>Выручка по продуктам — Пессимист</h3>
+    <div class="donut-wrap">
+      <svg class="donut-svg" width="140" height="140" viewBox="0 0 140 140" id="donutPes"></svg>
+      <div class="donut-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>ОСАГО год.<span class="legend-pct">45,4%</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>ОСАГО кр.<span class="legend-pct">0,5%</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>КАСКО<span class="legend-pct">41,1%</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>ОСГОП<span class="legend-pct">12,9%</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="chart-card">
+    <h3>Выручка по продуктам — Оптимист</h3>
+    <div class="donut-wrap">
+      <svg class="donut-svg" width="140" height="140" viewBox="0 0 140 140" id="donutOpt"></svg>
+      <div class="donut-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>ОСАГО год.<span class="legend-pct">14,9%</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>ОСАГО кр.<span class="legend-pct">1,7%</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>КАСКО<span class="legend-pct">59,7%</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>ОСГОП<span class="legend-pct">23,7%</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ASSUMPTIONS -->
+<div class="tab-content" id="tab-assumptions">
+<div class="assumptions-grid fade-up">
+
+  <div class="assumption-card">
+    <h3>Аудитория и каналы</h3>
+    <div class="assumption-row"><span class="ah">Параметр</span><span class="ah">Пес.</span><span class="ah">Баз.</span><span class="ah">Опт.</span></div>
+    <div class="assumption-row"><span class="al">MAU водителей</span><span class="av pes">35 000</span><span class="av bas">40 000</span><span class="av opt">50 000</span></div>
+    <div class="assumption-row"><span class="al">Рост MAU / мес.</span><span class="av pes">0%</span><span class="av bas">0,5%</span><span class="av opt">1,5%</span></div>
+    <div class="assumption-row"><span class="al">CTR баннера</span><span class="av pes">1,5%</span><span class="av bas">3,0%</span><span class="av opt">5,0%</span></div>
+    <div class="assumption-row"><span class="al">CTR пушей</span><span class="av pes">3,0%</span><span class="av bas">5,0%</span><span class="av opt">8,0%</span></div>
+    <div class="assumption-row"><span class="al">Пушей / мес.</span><span class="av pes">2</span><span class="av bas">3</span><span class="av opt">4</span></div>
+    <div class="assumption-row"><span class="al">Показов баннера</span><span class="av pes">4</span><span class="av bas">8</span><span class="av opt">12</span></div>
+  </div>
+
+  <div class="assumption-card">
+    <h3>ОСАГО годовой</h3>
+    <div class="assumption-row"><span class="ah">Параметр</span><span class="ah">Пес.</span><span class="ah">Баз.</span><span class="ah">Опт.</span></div>
+    <div class="assumption-row"><span class="al">Ср. чек, ₽</span><span class="av pes">18 000</span><span class="av bas">21 000</span><span class="av opt">25 000</span></div>
+    <div class="assumption-row"><span class="al">КВ агрегатора</span><span class="av pes">10%</span><span class="av bas">15%</span><span class="av opt">20%</span></div>
+    <div class="assumption-row"><span class="al">Конверсия</span><span class="av pes">2,0%</span><span class="av bas">3,5%</span><span class="av opt">5,0%</span></div>
+  </div>
+
+  <div class="assumption-card">
+    <h3>ОСАГО краткосрочный</h3>
+    <div class="assumption-row"><span class="ah">Параметр</span><span class="ah">Пес.</span><span class="ah">Баз.</span><span class="ah">Опт.</span></div>
+    <div class="assumption-row"><span class="al">Ср. чек, ₽</span><span class="av pes">200</span><span class="av bas">350</span><span class="av opt">500</span></div>
+    <div class="assumption-row"><span class="al">КВ агрегатора</span><span class="av pes">10%</span><span class="av bas">15%</span><span class="av opt">20%</span></div>
+    <div class="assumption-row"><span class="al">Конверсия</span><span class="av pes">5,0%</span><span class="av bas">8,0%</span><span class="av opt">12,0%</span></div>
+    <div class="assumption-row"><span class="al">Доля в кликах</span><span class="av pes">30%</span><span class="av bas">50%</span><span class="av opt">70%</span></div>
+  </div>
+
+  <div class="assumption-card">
+    <h3>КАСКО</h3>
+    <div class="assumption-row"><span class="ah">Параметр</span><span class="ah">Пес.</span><span class="ah">Баз.</span><span class="ah">Опт.</span></div>
+    <div class="assumption-row"><span class="al">Ср. чек, ₽</span><span class="av pes">80 000</span><span class="av bas">100 000</span><span class="av opt">150 000</span></div>
+    <div class="assumption-row"><span class="al">КВ агрегатора</span><span class="av pes">15%</span><span class="av bas">20%</span><span class="av opt">25%</span></div>
+    <div class="assumption-row"><span class="al">Конверсия</span><span class="av pes">0,2%</span><span class="av bas">0,4%</span><span class="av opt">0,8%</span></div>
+  </div>
+
+  <div class="assumption-card">
+    <h3>ОСГОП</h3>
+    <div class="assumption-row"><span class="ah">Параметр</span><span class="ah">Пес.</span><span class="ah">Баз.</span><span class="ah">Опт.</span></div>
+    <div class="assumption-row"><span class="al">Ср. чек, ₽</span><span class="av pes">1 500</span><span class="av bas">2 800</span><span class="av opt">4 500</span></div>
+    <div class="assumption-row"><span class="al">КВ агрегатора</span><span class="av pes">12%</span><span class="av bas">17%</span><span class="av opt">22%</span></div>
+    <div class="assumption-row"><span class="al">Конверсия</span><span class="av pes">4,0%</span><span class="av bas">7,0%</span><span class="av opt">12,0%</span></div>
+  </div>
+
+  <div class="assumption-card">
+    <h3>Расходы</h3>
+    <div class="assumption-row"><span class="ah">Параметр</span><span class="ah">Пес.</span><span class="ah">Баз.</span><span class="ah">Опт.</span></div>
+    <div class="assumption-row"><span class="al">Разовые доработки</span><span class="av pes">0</span><span class="av bas">300 000</span><span class="av opt">500 000</span></div>
+    <div class="assumption-row"><span class="al">Менеджер / мес.</span><span class="av pes">0</span><span class="av bas">50 000</span><span class="av opt">80 000</span></div>
+    <div class="assumption-row"><span class="al">Поддержка / мес.</span><span class="av pes">0</span><span class="av bas">30 000</span><span class="av opt">50 000</span></div>
+    <div class="assumption-row"><span class="al">Маркетинг / мес.</span><span class="av pes">0</span><span class="av bas">20 000</span><span class="av opt">50 000</span></div>
+    <div class="assumption-row"><span class="al">Техподдержка / мес.</span><span class="av pes">0</span><span class="av bas">15 000</span><span class="av opt">30 000</span></div>
+    <div class="assumption-row" style="font-weight:700"><span class="al" style="color:var(--text)"><b>Итого OpEx / мес.</b></span><span class="av pes">0</span><span class="av bas">115 000</span><span class="av opt">210 000</span></div>
+  </div>
+
+</div>
+</div>
+
+<footer>ИНСАП · Финмодель CKassa v2 · Апрель 2026</footer>
+
+</div>
+
+<script>
+// Tab switching
+function switchTab(id) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Bar chart renderer
+function renderBars(containerId, data, color, formatter) {
+  const container = document.getElementById(containerId);
+  const max = Math.max(...data.map(d => d.value));
+  container.innerHTML = data.map((d, i) => {
+    const h = Math.max(3, (d.value / max) * 160);
+    return `<div class="bar-col">
+      <div class="bar-val">${formatter(d.value)}</div>
+      <div class="bar ${color}" style="height:${h}px;animation:fadeUp 0.5s ${i * 0.04}s ease forwards;opacity:0"></div>
+      <div class="bar-label">${d.label}</div>
+    </div>`;
+  }).join('');
+}
+
+// Revenue chart (base)
+const revenueData = [
+  {label:'М1', value:2652.5}, {label:'М2', value:2678.2}, {label:'М3', value:2687.5},
+  {label:'М4', value:2693.2}, {label:'М5', value:2719.4}, {label:'М6', value:2728.7},
+  {label:'М7', value:2734.4}, {label:'М8', value:2763.7}, {label:'М9', value:2769.4},
+  {label:'М10', value:2778.8}, {label:'М11', value:2804.9}, {label:'М12', value:2811.1}
+];
+renderBars('revenueChart', revenueData, 'g', v => Math.round(v).toLocaleString('ru'));
+
+// Cumulative profit chart
+const cumData = [
+  {label:'М1', value:2.24}, {label:'М2', value:4.80}, {label:'М3', value:7.37},
+  {label:'М4', value:9.95}, {label:'М5', value:12.56}, {label:'М6', value:15.17},
+  {label:'М7', value:17.79}, {label:'М8', value:20.44}, {label:'М9', value:23.09},
+  {label:'М10', value:25.76}, {label:'М11', value:28.45}, {label:'М12', value:31.14}
+];
+renderBars('cumulativeChart', cumData, 'b', v => v.toFixed(1));
+
+// Scenario comparison
+const scenData = [
+  {label:'Пессимист', value:2.8},
+  {label:'Базовый', value:31.1},
+  {label:'Оптимист', value:298.2}
+];
+const scenMax = 298.2;
+const scenContainer = document.getElementById('scenarioCompChart');
+scenContainer.innerHTML = scenData.map((d, i) => {
+  const colors = ['o','g','p'];
+  const h = Math.max(6, (d.value / scenMax) * 160);
+  return `<div class="bar-col">
+    <div class="bar-val">${d.value.toFixed(1)} млн</div>
+    <div class="bar ${colors[i]}" style="height:${h}px;animation:fadeUp 0.5s ${i * 0.1}s ease forwards;opacity:0"></div>
+    <div class="bar-label">${d.label}</div>
+  </div>`;
+}).join('');
+
+// Donut chart renderer
+function drawDonut(svgId, segments, size) {
+  const svg = document.getElementById(svgId);
+  const r = size / 2;
+  const cx = r, cy = r;
+  const outerR = r - 4;
+  const innerR = outerR * 0.58;
+  const colors = ['#74b9ff','#00d4aa','#a29bfe','#ffa94d'];
+  let startAngle = -90;
+  let paths = '';
+
+  segments.forEach((pct, i) => {
+    const angle = pct * 3.6;
+    const endAngle = startAngle + angle;
+    const gap = 2;
+    const s = startAngle + gap / 2;
+    const e = endAngle - gap / 2;
+    const sr = s * Math.PI / 180;
+    const er = e * Math.PI / 180;
+    const large = angle > 180 ? 1 : 0;
+
+    const x1o = cx + outerR * Math.cos(sr);
+    const y1o = cy + outerR * Math.sin(sr);
+    const x2o = cx + outerR * Math.cos(er);
+    const y2o = cy + outerR * Math.sin(er);
+    const x1i = cx + innerR * Math.cos(er);
+    const y1i = cy + innerR * Math.sin(er);
+    const x2i = cx + innerR * Math.cos(sr);
+    const y2i = cy + innerR * Math.sin(sr);
+
+    paths += `<path d="M${x1o},${y1o} A${outerR},${outerR} 0 ${large} 1 ${x2o},${y2o} L${x1i},${y1i} A${innerR},${innerR} 0 ${large} 0 ${x2i},${y2i} Z" fill="${colors[i]}" opacity="0.85"/>`;
+    startAngle = endAngle;
+  });
+
+  svg.innerHTML = paths;
+}
+
+drawDonut('donutChart', [32.3, 1.2, 46.9, 19.5], 160);
+drawDonut('donutPes', [45.4, 0.5, 41.1, 12.9], 140);
+drawDonut('donutOpt', [14.9, 1.7, 59.7, 23.7], 140);
+</script>
+</body>
+</html>
