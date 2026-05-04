@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Финмодель ОСАГО — НБКИ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0f1a;
+  --surface: #131825;
+  --surface-raised: #1a2035;
+  --border: #242d42;
+  --border-accent: #2a3a5c;
+  --text: #e2e8f0;
+  --text-dim: #8892a8;
+  --text-muted: #5a6478;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59,130,246,0.15);
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.12);
+  --yellow: #eab308;
+  --yellow-dim: rgba(234,179,8,0.1);
+  --yellow-border: rgba(234,179,8,0.3);
+  --red: #ef4444;
+  --orange: #f97316;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:24px;line-height:1.5}
+
+.header{text-align:center;margin-bottom:40px;position:relative}
+.header h1{font-size:28px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px}
+.header .sub{color:var(--text-dim);font-size:14px}
+.header::after{content:'';display:block;width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);margin:16px auto 0}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1100px;margin:0 auto}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border-accent),transparent)}
+.card.full{grid-column:1/-1}
+.card-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.card-title .dot.green{background:var(--green)}
+.card-title .dot.yellow{background:var(--yellow)}
+.card-title .dot.orange{background:var(--orange)}
+
+/* KPI big numbers */
+.kpi-row{display:flex;gap:16px;flex-wrap:wrap}
+.kpi{flex:1;min-width:140px;background:var(--surface-raised);border:1px solid var(--border);border-radius:10px;padding:16px 18px;text-align:center}
+.kpi .value{font-family:var(--mono);font-size:28px;font-weight:700;letter-spacing:-1px}
+.kpi .value.green{color:var(--green)}
+.kpi .value.accent{color:var(--accent)}
+.kpi .label{font-size:11px;color:var(--text-dim);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px}
+
+/* Funnel */
+.funnel{display:flex;flex-direction:column;gap:6px}
+.funnel-step{display:grid;grid-template-columns:1fr 100px 1fr;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;background:var(--surface-raised);border:1px solid var(--border);transition:border-color .2s}
+.funnel-step:hover{border-color:var(--accent)}
+.funnel-step .name{font-size:13px;font-weight:500}
+.funnel-step .val{font-family:var(--mono);font-size:15px;font-weight:600;text-align:center;color:var(--accent)}
+.funnel-step .note{font-size:11px;color:var(--text-muted);text-align:right}
+.funnel-step.result{background:var(--green-dim);border-color:rgba(34,197,94,0.25)}
+.funnel-step.result .val{color:var(--green)}
+.funnel-arrow{text-align:center;color:var(--text-muted);font-size:12px;line-height:1;margin:2px 0}
+
+/* Table */
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);font-weight:600;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)}
+.tbl td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(59,130,246,0.04)}
+.tbl .mono{font-family:var(--mono);font-weight:500}
+.tbl .highlight{background:var(--yellow-dim);border-left:2px solid var(--yellow)}
+.tbl .tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;letter-spacing:0.3px}
+.tbl .tag.assumption{background:var(--yellow-dim);color:var(--yellow);border:1px solid var(--yellow-border)}
+.tbl .tag.data{background:rgba(59,130,246,0.1);color:var(--accent);border:1px solid rgba(59,130,246,0.25)}
+.tbl .tag.benchmark{background:rgba(139,92,246,0.1);color:#a78bfa;border:1px solid rgba(139,92,246,0.25)}
+
+/* Scenario */
+.scenario-bar{display:flex;align-items:flex-end;gap:3px;height:100px;margin-top:12px}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px}
+.bar{border-radius:4px 4px 0 0;width:100%;min-width:20px;transition:height .4s ease}
+.bar.base{background:linear-gradient(180deg,var(--accent),#1d4ed8)}
+.bar.other{background:linear-gradient(180deg,#334155,#1e293b);border:1px solid var(--border)}
+.bar-label{font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+.bar-val{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text)}
+
+/* Glossary */
+.gloss-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:12px}
+.gloss-item:last-child{border-bottom:none}
+.gloss-item .term{font-weight:600;font-size:13px;min-width:160px;color:var(--accent);flex-shrink:0}
+.gloss-item .def{font-size:13px;color:var(--text-dim)}
+
+/* Controls */
+.controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.control{display:flex;flex-direction:column;gap:4px}
+.control label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px}
+.control input[type=range]{-webkit-appearance:none;width:180px;height:4px;border-radius:2px;background:var(--border);outline:none}
+.control input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px var(--accent-glow)}
+.control .val-display{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent)}
+
+.warning-box{background:var(--yellow-dim);border:1px solid var(--yellow-border);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--yellow);display:flex;align-items:center;gap:8px;margin-top:12px}
+.warning-box .icon{font-size:16px;flex-shrink:0}
+
+.lk-block{background:var(--surface-raised);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-top:12px}
+.lk-block .lk-title{font-size:12px;font-weight:600;color:var(--orange);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+.lk-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+.lk-row .lk-label{color:var(--text-dim)}
+.lk-row .lk-val{font-family:var(--mono);font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Финмодель ОСАГО — НБКИ</h1>
+  <div class="sub">Органический трафик · неавторизованная зона · среднее за месяц</div>
+</div>
+
+<div class="grid">
+
+  <!-- KPI -->
+  <div class="card full">
+    <div class="card-title"><span class="dot green"></span>Ключевые показатели (базовый сценарий)</div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="value accent" id="kpi-traffic">1 200 000</div><div class="label">Визитов / мес.</div></div>
+      <div class="kpi"><div class="value" id="kpi-target" style="color:#a78bfa">40 320</div><div class="label">Целевая аудитория</div></div>
+      <div class="kpi"><div class="value green" id="kpi-sales">288</div><div class="label">Полисов / мес.</div></div>
+      <div class="kpi"><div class="value green" id="kpi-revenue">131 040 ₽</div><div class="label">Доход / мес.</div></div>
+      <div class="kpi"><div class="value" style="color:var(--yellow)" id="kpi-year">1 572 480 ₽</div><div class="label">Доход / год</div></div>
+    </div>
+  </div>
+
+  <!-- Interactive controls -->
+  <div class="card full">
+    <div class="card-title"><span class="dot"></span>Интерактивные параметры</div>
+    <div class="controls">
+      <div class="control">
+        <label>Доля автовладельцев <span class="tag assumption">допущение</span></label>
+        <input type="range" id="r-auto" min="20" max="60" value="42" oninput="recalc()">
+        <span class="val-display" id="v-auto">42%</span>
+      </div>
+      <div class="control">
+        <label>CR визит → клик ОСАГО <span class="tag benchmark">бенчмарк</span></label>
+        <input type="range" id="r-click" min="5" max="50" value="10" step="1" oninput="recalc()">
+        <span class="val-display" id="v-click">1.0%</span>
+      </div>
+      <div class="control">
+        <label>CR клик → анкета <span class="tag assumption">допущение</span></label>
+        <input type="range" id="r-form" min="10" max="60" value="30" oninput="recalc()">
+        <span class="val-display" id="v-form">30%</span>
+      </div>
+      <div class="control">
+        <label>CR анкета → оплата <span class="tag data">ИНСАП</span></label>
+        <input type="range" id="r-pay" min="3" max="15" value="8" oninput="recalc()">
+        <span class="val-display" id="v-pay">8%</span>
+      </div>
+    </div>
+    <div class="warning-box"><span class="icon">⚠</span> Жёлтые параметры — допущения. Замените на фактические данные после первых тестов лендинга.</div>
+  </div>
+
+  <!-- Funnel -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>Воронка конверсии</div>
+    <div class="funnel">
+      <div class="funnel-step">
+        <span class="name">Визиты на сайт</span>
+        <span class="val" id="f1">1 200 000</span>
+        <span class="note">Органика</span>
+      </div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-step">
+        <span class="name">Автовладельцев</span>
+        <span class="val" id="f2">504 000</span>
+        <span class="note">× <span id="fn2">42</span>%</span>
+      </div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-step">
+        <span class="name">С потребностью ОСАГО</span>
+        <span class="val" id="f3">40 320</span>
+        <span class="note">× 8% (1/12)</span>
+      </div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-step">
+        <span class="name">Кликнули на блок ОСАГО</span>
+        <span class="val" id="f4">12 000</span>
+        <span class="note">CR <span id="fn4">1.0</span>%</span>
+      </div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-step">
+        <span class="name">Заполнили анкету</span>
+        <span class="val" id="f5">3 600</span>
+        <span class="note">CR <span id="fn5">30</span>%</span>
+      </div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-step result">
+        <span class="name">Оплатили полис</span>
+        <span class="val" id="f6">288</span>
+        <span class="note">CR <span id="fn6">8</span>%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Вводные -->
+  <div class="card">
+    <div class="card-title"><span class="dot yellow"></span>Вводные параметры</div>
+    <table class="tbl">
+      <thead><tr><th>Параметр</th><th>Значение</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Трафик сайта</td><td class="mono">1 200 000</td><td><span class="tag data">НБКИ</span></td></tr>
+        <tr><td>Новых клиентов ЛК / мес.</td><td class="mono">250 000</td><td><span class="tag data">НБКИ</span></td></tr>
+        <tr><td>Доля автовладельцев</td><td class="mono" id="tbl-auto">42%</td><td><span class="tag assumption">допущение</span></td></tr>
+        <tr><td>Потребность ОСАГО / мес.</td><td class="mono">8%</td><td><span class="tag assumption">допущение</span></td></tr>
+        <tr><td>CR визит → клик</td><td class="mono" id="tbl-click">1.0%</td><td><span class="tag benchmark">бенчмарк</span></td></tr>
+        <tr><td>CR клик → анкета</td><td class="mono" id="tbl-form">30%</td><td><span class="tag assumption">допущение</span></td></tr>
+        <tr><td>CR анкета → оплата</td><td class="mono" id="tbl-pay">8%</td><td><span class="tag data">ИНСАП</span></td></tr>
+        <tr><td>КВ ИНСАП / полис</td><td class="mono">650 ₽</td><td></td></tr>
+        <tr><td>Доля партнёра</td><td class="mono">70%</td><td></td></tr>
+        <tr><td>Доход партнёра / полис</td><td class="mono">455 ₽</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Scenario chart -->
+  <div class="card">
+    <div class="card-title"><span class="dot orange"></span>Сценарный анализ — CR клика</div>
+    <table class="tbl" id="scenario-tbl">
+      <thead><tr><th>CR клика</th><th>Полисов / мес.</th><th>Доход / мес.</th></tr></thead>
+      <tbody id="scenario-body"></tbody>
+    </table>
+    <div class="scenario-bar" id="scenario-bars"></div>
+  </div>
+
+  <!-- ЛК — справочно -->
+  <div class="card">
+    <div class="card-title"><span class="dot orange"></span>Потенциал авторизованной зоны (справочно)</div>
+    <div class="lk-block">
+      <div class="lk-title">E-mail канал · будущий этап</div>
+      <div class="lk-row"><span class="lk-label">Новых клиентов ЛК / мес.</span><span class="lk-val">250 000</span></div>
+      <div class="lk-row"><span class="lk-label">Целевая аудитория ОСАГО</span><span class="lk-val" id="lk-target">105 000</span></div>
+      <div class="lk-row"><span class="lk-label">Продажи при e-mail CR 1%</span><span class="lk-val" id="lk-sales">84</span></div>
+      <div class="lk-row"><span class="lk-label">Доп. доход / мес.</span><span class="lk-val" id="lk-rev">38 220 ₽</span></div>
+    </div>
+    <div class="warning-box" style="margin-top:12px"><span class="icon">ℹ</span> Не учтено в базовой модели. Появится после запуска ЛК.</div>
+  </div>
+
+  <!-- Glossary -->
+  <div class="card full">
+    <div class="card-title"><span class="dot yellow"></span>Глоссарий</div>
+    <div class="gloss-item"><span class="term">Органический трафик</span><span class="def">Посетители из поисковых систем (SEO) без платного продвижения</span></div>
+    <div class="gloss-item"><span class="term">Доля автовладельцев</span><span class="def">~42% — рыночное допущение (~50 млн авто / ~115 млн взрослых). Уточнить по аналитике НБКИ</span></div>
+    <div class="gloss-item"><span class="term">Потребность / мес.</span><span class="def">~8% = 1/12: равномерное распределение дат истечения полисов</span></div>
+    <div class="gloss-item"><span class="term">CR визит → клик</span><span class="def">1% — бенчмарк для неавторизованной зоны финансовых сайтов</span></div>
+    <div class="gloss-item"><span class="term">CR клик → анкета</span><span class="def">30% — допущение. Требует A/B теста лендинга</span></div>
+    <div class="gloss-item"><span class="term">CR анкета → оплата</span><span class="def">8% — данные ИНСАП (общий бенчмарк партнёра)</span></div>
+    <div class="gloss-item"><span class="term">КВ ИНСАП</span><span class="def">Комиссионное вознаграждение платформы: 650 ₽/полис, из них 70% партнёру = 455 ₽</span></div>
+    <div class="gloss-item"><span class="term">Авторизованная зона</span><span class="def">Личный кабинет НБКИ — будущий этап с e-mail каналом</span></div>
+  </div>
+
+</div>
+
+<script>
+const fmt = n => n.toLocaleString('ru-RU');
+const fmtR = n => fmt(Math.round(n)) + ' ₽';
+
+const scenarios = [
+  {cr: 0.005, label: '0.5%'},
+  {cr: 0.01,  label: '1.0%', base: true},
+  {cr: 0.02,  label: '2.0%'},
+  {cr: 0.03,  label: '3.0%'},
+  {cr: 0.05,  label: '5.0%'},
+];
+
+function recalc() {
+  const traffic = 1200000;
+  const autoP = +document.getElementById('r-auto').value / 100;
+  const clickCR = +document.getElementById('r-click').value / 10 / 100;
+  const formCR = +document.getElementById('r-form').value / 100;
+  const payCR = +document.getElementById('r-pay').value / 100;
+  const revenuePerPolicy = 455;
+
+  document.getElementById('v-auto').textContent = Math.round(autoP * 100) + '%';
+  document.getElementById('v-click').textContent = (clickCR * 100).toFixed(1) + '%';
+  document.getElementById('v-form').textContent = Math.round(formCR * 100) + '%';
+  document.getElementById('v-pay').textContent = Math.round(payCR * 100) + '%';
+
+  // Funnel
+  const auto = Math.round(traffic * autoP);
+  const need = Math.round(auto * 0.08);
+  const clicked = Math.round(traffic * clickCR);
+  const filled = Math.round(clicked * formCR);
+  const paid = Math.round(filled * payCR);
+  const rev = paid * revenuePerPolicy;
+  const revYear = rev * 12;
+
+  document.getElementById('f1').textContent = fmt(traffic);
+  document.getElementById('f2').textContent = fmt(auto);
+  document.getElementById('fn2').textContent = Math.round(autoP * 100);
+  document.getElementById('f3').textContent = fmt(need);
+  document.getElementById('f4').textContent = fmt(clicked);
+  document.getElementById('fn4').textContent = (clickCR * 100).toFixed(1);
+  document.getElementById('f5').textContent = fmt(filled);
+  document.getElementById('fn5').textContent = Math.round(formCR * 100);
+  document.getElementById('f6').textContent = fmt(paid);
+  document.getElementById('fn6').textContent = Math.round(payCR * 100);
+
+  // KPIs
+  document.getElementById('kpi-target').textContent = fmt(need);
+  document.getElementById('kpi-sales').textContent = fmt(paid);
+  document.getElementById('kpi-revenue').textContent = fmtR(rev);
+  document.getElementById('kpi-year').textContent = fmtR(revYear);
+
+  // Table params
+  document.getElementById('tbl-auto').textContent = Math.round(autoP * 100) + '%';
+  document.getElementById('tbl-click').textContent = (clickCR * 100).toFixed(1) + '%';
+  document.getElementById('tbl-form').textContent = Math.round(formCR * 100) + '%';
+  document.getElementById('tbl-pay').textContent = Math.round(payCR * 100) + '%';
+
+  // LK
+  const lkTarget = Math.round(250000 * autoP);
+  const lkSales = Math.round(lkTarget * 0.01 * payCR);
+  document.getElementById('lk-target').textContent = fmt(lkTarget);
+  document.getElementById('lk-sales').textContent = fmt(lkSales);
+  document.getElementById('lk-rev').textContent = fmtR(lkSales * revenuePerPolicy);
+
+  // Scenarios
+  const scenarioData = scenarios.map(s => {
+    const cl = Math.round(traffic * s.cr);
+    const fi = Math.round(cl * formCR);
+    const pa = Math.round(fi * payCR);
+    return {...s, sales: pa, rev: pa * revenuePerPolicy};
+  });
+
+  const maxSales = Math.max(...scenarioData.map(s => s.sales));
+  let tbody = '';
+  scenarioData.forEach(s => {
+    const cls = s.base ? ' class="highlight"' : '';
+    tbody += `<tr${cls}><td class="mono">${s.label}</td><td class="mono">${fmt(s.sales)}</td><td class="mono">${fmtR(s.rev)}</td></tr>`;
+  });
+  document.getElementById('scenario-body').innerHTML = tbody;
+
+  let bars = '';
+  scenarioData.forEach(s => {
+    const h = Math.max(8, (s.sales / maxSales) * 90);
+    const cls = s.base ? 'base' : 'other';
+    bars += `<div class="bar-col"><div class="bar-val">${fmt(s.sales)}</div><div class="bar ${cls}" style="height:${h}px"></div><div class="bar-label">${s.label}</div></div>`;
+  });
+  document.getElementById('scenario-bars').innerHTML = bars;
+}
+
+recalc();
+</script>
+</body>
+</html>
