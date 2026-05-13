@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Финмодель — Татнефть x ИНСАП · ОСАГО</title>
+<style>
+  :root {
+    --bg:#0b1220; --surface:#111827; --surface2:#172033; --line:rgba(255,255,255,.08);
+    --text:#f3f6fb; --muted:#8ea0b8; --blue:#38bdf8; --green:#22c55e; --amber:#f59e0b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;background:var(--bg);color:var(--text);font-family:Inter,Manrope,Arial,sans-serif;font-size:14px;line-height:1.5}
+  .wrap{max-width:1080px;margin:0 auto;padding:42px 24px 56px}
+  .label{color:var(--blue);font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+  h1{margin-top:8px;font-size:clamp(38px,6vw,76px);line-height:.98;letter-spacing:.01em}
+  h1 span{color:var(--green)}
+  .sub{max-width:780px;margin-top:12px;color:var(--muted)}
+  .tabs{display:inline-flex;margin:28px 0 16px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+  .tab{min-width:160px;border:0;border-radius:7px;padding:9px 12px;background:transparent;color:var(--muted);font:inherit;font-weight:800;cursor:pointer}
+  .tab.active{background:var(--green);color:#04100c}
+  .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  .card,.panel{border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+  .card{padding:16px}
+  .k{color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .v{margin-top:6px;font-size:31px;font-weight:900;line-height:1;white-space:nowrap}
+  .u{margin-top:5px;color:var(--muted);font-size:12px}
+  h2{margin:34px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line);color:var(--muted);font-size:20px;text-transform:uppercase;letter-spacing:.08em}
+  h2 span{color:var(--text)}
+  .funnel{display:flex;gap:0;margin-top:12px}
+  .step{flex:1;min-width:0;padding:13px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-align:center}
+  .step.final{border-color:rgba(34,197,94,.55);background:linear-gradient(135deg,rgba(34,197,94,.10),var(--surface))}
+  .arrow{display:grid;place-items:center;width:24px;color:var(--muted);font-size:22px}
+  .n{font-size:25px;font-weight:900;line-height:1}
+  .cr{margin-top:3px;color:var(--green);font-size:11px;font-weight:900}
+  .name{margin-top:3px;color:var(--muted);font-size:11px;line-height:1.2}
+  .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.8fr);gap:14px;align-items:start}
+  .panel{padding:18px}
+  .controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 14px}
+  label{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+  input{width:100%;margin-top:7px;accent-color:var(--green)}
+  .val{color:var(--text);white-space:nowrap}
+  table{width:100%;border-collapse:collapse}
+  th{padding:10px 11px;border-bottom:1px solid var(--line);color:var(--muted);font-size:11px;letter-spacing:.07em;text-align:left;text-transform:uppercase}
+  td{padding:10px 11px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  .num{font-weight:900;color:#fff;white-space:nowrap}
+  .green{color:var(--green)} .blue{color:var(--blue)} .amber{color:var(--amber)} .muted{color:var(--muted)}
+  .note{margin-top:16px;padding:14px 16px;border-left:3px solid var(--amber);background:rgba(245,158,11,.08);color:#d5deea}
+  @media(max-width:860px){.grid,.split{grid-template-columns:1fr 1fr}.funnel{flex-direction:column;gap:7px}.arrow{width:100%;height:14px;transform:rotate(90deg)}}
+  @media(max-width:620px){.wrap{padding:28px 14px}.grid,.split,.controls{grid-template-columns:1fr}.tab{min-width:132px}.v{font-size:27px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="label">Финмодель · ОСАГО</div>
+  <h1>Татнефть <span>x ИНСАП</span></h1>
+  <p class="sub">Расчет от MAU, частоты коммуникаций и доставленных push: переходы на лендинг, анкеты, оплаты и КВ партнера / ИНСАП.</p>
+
+  <div class="tabs">
+    <button class="tab" data-mode="low">Low · 1%</button>
+    <button class="tab active" data-mode="base">Base · 4%</button>
+    <button class="tab" data-mode="high">High · 10%</button>
+  </div>
+
+  <section class="grid">
+    <div class="card"><div class="k">MAU</div><div class="v" id="kpiMau"></div><div class="u">активная база</div></div>
+    <div class="card"><div class="k">Переходов / мес.</div><div class="v blue" id="kpiLanding"></div><div class="u">доставленный push → лендинг</div></div>
+    <div class="card"><div class="k">Оплат / мес.</div><div class="v green" id="kpiPaid"></div><div class="u">лендинг → оплата</div></div>
+    <div class="card"><div class="k">КВ партнера / год</div><div class="v green" id="kpiPartner"></div><div class="u">ОСАГО + кроссы</div></div>
+  </section>
+
+  <h2><span>Воронка</span> · после перехода на лендинг</h2>
+  <section class="funnel" id="funnel"></section>
+
+  <h2><span>Вводные</span> · можно двигать</h2>
+  <section class="split">
+    <div class="panel">
+      <div class="controls">
+        <div><label>MAU <span class="val" id="mauVal"></span></label><input id="mau" type="range" min="100000" max="1000000" step="50000"></div>
+        <div><label>Пушей / user / мес. <span class="val" id="freqVal"></span></label><input id="freq" type="range" min="1" max="4" step="1"></div>
+        <div><label>Доставляемость push <span class="val" id="deliveryVal"></span></label><input id="delivery" type="range" min=".7" max="1" step=".01"></div>
+        <div><label>Push → лендинг <span class="val" id="landingCtrVal"></span></label><input id="landingCtr" type="range" min=".01" max=".10" step=".005"></div>
+        <div><label>Лендинг → анкета <span class="val" id="formCrVal"></span></label><input id="formCr" type="range" min=".15" max=".45" step=".01"></div>
+        <div><label>Анкета → оплата <span class="val" id="landingPayVal"></span></label><input id="landingPay" type="range" min=".04" max=".20" step=".005"></div>
+      </div>
+      <div class="note" id="benchNote"></div>
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Показатель</th><th>Значение</th><th>Логика</th></tr></thead>
+        <tbody id="detailRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <h2><span>Экономика</span> · месяц / год / 3 года</h2>
+  <section class="panel">
+    <table>
+      <thead><tr><th>Метрика</th><th>Месяц</th><th>Год</th><th>3 года</th></tr></thead>
+      <tbody id="econRows"></tbody>
+    </table>
+  </section>
+
+  <div class="note">
+    <strong>Экономика на полис:</strong> зашита по фактическим оплаченным ОСАГО ООО «ТАТНЕФТЬ-АЗС-ЗАПАД» за последний год: 13.05.2025–13.05.2026, 1 392 полиса. Средняя премия ОСАГО без кроссов — 6 304 ₽; средний входящий КВ от СК — 778 ₽, КВ Татнефть — 476 ₽, КВ ИНСАП — 302 ₽.
+  </div>
+</div>
+
+<script>
+const BASE = {
+  mau: 500000,
+  freq: 2,
+  delivery: 0.90,
+  landingCtr: 0.040,
+  formCr: 0.35,
+  landingPay: 0.08,
+  gco: 777.642334,
+  partnerKv: 475.883232,
+  insappKv: 301.759102,
+  prolongation: 0.40
+};
+const MODES = {
+  low: { landingCtr: 0.010, label: 'Low · 1%' },
+  base: { landingCtr: 0.040, label: 'Base · 4%' },
+  high: { landingCtr: 0.100, label: 'High · 10%' }
+};
+let state = { ...BASE };
+let mode = 'base';
+const fmt = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 });
+const pct = (v, d=1) => `${new Intl.NumberFormat('ru-RU', { minimumFractionDigits:d, maximumFractionDigits:d }).format(v*100)}%`;
+const rub = v => `${fmt.format(v)} ₽`;
+const compact = v => Math.abs(v) >= 1000000 ? `${new Intl.NumberFormat('ru-RU',{maximumFractionDigits:1}).format(v/1000000)}М ₽` : rub(v);
+
+function calc() {
+  const sent = state.mau * state.freq;
+  const delivered = sent * state.delivery;
+  const landing = delivered * state.landingCtr;
+  const forms = landing * state.formCr;
+  const paid = forms * state.landingPay;
+  const grossOsago = paid * state.gco;
+  const partner = paid * state.partnerKv;
+  const insapp = paid * state.insappKv;
+  return { sent, delivered, landing, forms, paid, grossOsago, partner, insapp };
+}
+
+function render() {
+  const m = calc();
+  document.getElementById('kpiMau').textContent = fmt.format(state.mau);
+  document.getElementById('kpiLanding').textContent = fmt.format(m.landing);
+  document.getElementById('kpiPaid').textContent = fmt.format(m.paid);
+  document.getElementById('kpiPartner').textContent = compact(m.partner * 12);
+
+  const steps = [
+    ['старт', state.mau, 'MAU'],
+    [pct(state.delivery,0), m.delivered, 'доставлено'],
+    [pct(state.landingCtr,1), m.landing, 'лендинг'],
+    [pct(state.formCr,0), m.forms, 'анкета'],
+    [pct(state.landingPay,1), m.paid, 'оплата']
+  ];
+  document.getElementById('funnel').innerHTML = steps.map((s,i)=>`
+    ${i ? '<div class="arrow">›</div>' : ''}
+    <div class="step ${i===steps.length-1?'final':''}">
+      <div class="n">${fmt.format(s[1])}</div>
+      <div class="cr">${s[0]}</div>
+      <div class="name">${s[2]}</div>
+    </div>`).join('');
+
+  document.getElementById('detailRows').innerHTML = [
+    ['Отправлено пушей / мес.', fmt.format(m.sent), `MAU × ${fmt.format(state.freq)}`],
+    ['Доставлено пушей / мес.', fmt.format(m.delivered), `${pct(state.delivery,0)} от отправленных`],
+    ['Переходы на лендинг / мес.', fmt.format(m.landing), `${pct(state.landingCtr,1)} от доставленных`],
+    ['Анкеты / мес.', fmt.format(m.forms), `${pct(state.formCr,0)} от переходов`],
+    ['Оплаты / мес.', fmt.format(m.paid), `${pct(state.landingPay,1)} от анкет`],
+    ['Входящий КВ СК / полис', rub(state.gco), 'факт за последний год'],
+    ['КВ Татнефть / полис', rub(state.partnerKv), 'факт за последний год'],
+    ['КВ ИНСАП / полис', rub(state.insappKv), 'факт за последний год']
+  ].map(r=>`<tr><td>${r[0]}</td><td><span class="num">${r[1]}</span></td><td class="muted">${r[2]}</td></tr>`).join('');
+
+  const mult3 = 1 + (1 + state.prolongation) + Math.pow(1 + state.prolongation, 2);
+  document.getElementById('econRows').innerHTML = [
+    ['Оплат ОСАГО', fmt.format(m.paid), fmt.format(m.paid*12), fmt.format(m.paid*12*mult3)],
+    ['Gross КВ от СК', rub(m.grossOsago), rub(m.grossOsago*12), rub(m.grossOsago*12*mult3)],
+    ['КВ Татнефть', rub(m.partner), rub(m.partner*12), rub(m.partner*12*mult3)],
+    ['КВ ИНСАП', rub(m.insapp), rub(m.insapp*12), rub(m.insapp*12*mult3)]
+  ].map((r,i)=>`<tr><td>${r[0]}</td><td><span class="num ${i>1?'green':''}">${r[1]}</span></td><td><span class="num ${i>1?'green':''}">${r[2]}</span></td><td><span class="num ${i>1?'green':''}">${r[3]}</span></td></tr>`).join('');
+
+  document.getElementById('benchNote').innerHTML =
+    `<strong>Логика:</strong> open rate не используем напрямую: для ОСАГО важнее переход из доставленного push на лендинг. Base = <strong>${pct(state.landingCtr,1)}</strong> от доставленных push; дальше бенчи ИНСАП: лендинг → анкета <strong>35%</strong>, анкета → оплата <strong>${pct(state.landingPay,1)}</strong>.`;
+}
+
+function bind() {
+  for (const id of ['mau','freq','delivery','landingCtr','formCr','landingPay']) {
+    const el = document.getElementById(id);
+    el.value = state[id];
+    el.addEventListener('input', () => {
+      state[id] = Number(el.value);
+      mode = 'custom';
+      syncLabels();
+      render();
+    });
+  }
+  document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+    mode = btn.dataset.mode;
+    state = { ...state, landingCtr: MODES[mode].landingCtr };
+    syncControls();
+    document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    render();
+  }));
+}
+function syncControls(){ for (const id of ['mau','freq','delivery','landingCtr','formCr','landingPay']) document.getElementById(id).value = state[id]; syncLabels(); }
+function syncLabels(){
+  document.getElementById('mauVal').textContent = fmt.format(state.mau);
+  document.getElementById('freqVal').textContent = fmt.format(state.freq);
+  document.getElementById('deliveryVal').textContent = pct(state.delivery,0);
+  document.getElementById('landingCtrVal').textContent = pct(state.landingCtr,1);
+  document.getElementById('formCrVal').textContent = pct(state.formCr,0);
+  document.getElementById('landingPayVal').textContent = pct(state.landingPay,1);
+}
+bind(); syncControls(); render();
+</script>
+</body>
+</html>
